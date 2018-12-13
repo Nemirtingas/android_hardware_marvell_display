@@ -26,6 +26,8 @@ LOCAL_PATH	:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
+    libstock.cpp \
+    libgal.cpp \
 	gc_gralloc_fb.cpp \
 	gc_gralloc_alloc.cpp \
     gc_gralloc_map.cpp \

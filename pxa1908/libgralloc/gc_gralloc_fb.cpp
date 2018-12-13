@@ -144,6 +144,7 @@ fb_setSwapInterval(
     int Interval
     )
 {
+    log_func_entry;
     if ((Interval < Dev->minSwapInterval)
     ||  (Interval > Dev->maxSwapInterval)
     )
@@ -179,6 +180,7 @@ fb_post(
     buffer_handle_t Buffer
     )
 {
+    log_func_entry;
     if (!Buffer)
     {
         return -EINVAL;
@@ -329,6 +331,7 @@ mapFrameBufferLocked(
     struct private_module_t * Module
     )
 {
+    log_func_entry;
     /* already initialized... */
     if (Module->framebuffer)
     {
@@ -357,7 +360,7 @@ mapFrameBufferLocked(
 
     if (fd < 0)
     {
-        ALOGE("Can not find a valid frambuffer device.");
+        ALOGE("%s Can not find a valid frambuffer device.", __FUNCTION__);
 
         return -errno;
     }
@@ -366,7 +369,7 @@ mapFrameBufferLocked(
     struct fb_fix_screeninfo finfo;
     if (ioctl(fd, FBIOGET_FSCREENINFO, &finfo) == -1)
     {
-        ALOGE("ioctl(FBIOGET_FSCREENINFO) failed.");
+        ALOGE("%s ioctl(FBIOGET_FSCREENINFO) failed.", __FUNCTION__);
         close(fd);
         return -errno;
     }
@@ -375,7 +378,7 @@ mapFrameBufferLocked(
     struct fb_var_screeninfo info;
     if (ioctl(fd, FBIOGET_VSCREENINFO, &info) == -1)
     {
-        ALOGE("ioctl(FBIOGET_FSCREENINFO) failed.");
+        ALOGE("%s ioctl(FBIOGET_FSCREENINFO) failed.", __FUNCTION__);
         close(fd);
         return -errno;
     }
@@ -425,16 +428,17 @@ mapFrameBufferLocked(
         if (i == sizeof (formatTable) / sizeof (formatTable[0]))
         {
             /* Can not find format info in table. */
-            ALOGW("Unkown format specified: %d", format);
+            ALOGE("%s Unkown format specified: %d", __FUNCTION__, format);
 
             /* Set to unknown format. */
             format = 0;
+            close(fd);
+            return -EINVAL;
         }
     }
 
     /* Request NUM_BUFFERS screens (at least 2 for page flipping) */
-    //info.yres_virtual = info.yres * NUM_BUFFERS;
-    info.yres_virtual = _ALIGN(info.yres, 4)* NUM_BUFFERS;
+    info.yres_virtual = info.yres * NUM_BUFFERS;
     /* Align xres to 16 multiple and set to xres_virtual as frame buffer actual stride */
     info.xres_virtual = _ALIGN(info.xres, 16);
 
@@ -461,7 +465,7 @@ mapFrameBufferLocked(
 
     if (ioctl(fd, FBIOGET_VSCREENINFO, &info) == -1)
     {
-        ALOGE("ioctl(FBIOGET_VSCREENINFO) failed.");
+        ALOGE("%s ioctl(FBIOGET_VSCREENINFO) failed.", __FUNCTION__);
         close(fd);
 
         return -errno;
@@ -530,12 +534,14 @@ mapFrameBufferLocked(
     if (ioctl(fd, FBIOGET_FSCREENINFO, &finfo) == -1)
     {
         close(fd);
+        ALOGE("%s ioctl(fd, FBIOGET_FSCREENINFO)", __FUNCTION__);
         return -errno;
     }
 
     if (finfo.smem_len <= 0)
     {
         close(fd);
+        ALOGE("%s finfo.smem_len <= 0", __FUNCTION__);
         return -errno;
     }
 
@@ -567,11 +573,14 @@ mapFrameBufferLocked(
     if (vaddr == MAP_FAILED)
     {
         ALOGE("Error mapping the framebuffer (%s)", strerror(errno));
-
         return -errno;
     }
 
     Module->framebuffer->base = intptr_t(vaddr);
+
+    memset(vaddr, 0, fbSize);
+
+    close(fd);
 
     return 0;
 }
@@ -596,6 +605,7 @@ mapFrameBuffer(
     struct private_module_t* Module
     )
 {
+    log_func_entry;
     pthread_mutex_lock(&Module->lock);
 
     int err = mapFrameBufferLocked(Module);
@@ -625,6 +635,7 @@ fb_close(
     struct hw_device_t * Dev
     )
 {
+    log_func_entry;
     fb_context_t * ctx = (fb_context_t*) Dev;
 
     if (ctx != NULL)
@@ -661,6 +672,7 @@ fb_device_open(
     hw_device_t ** Device
     )
 {
+    log_func_entry;
     int status = -EINVAL;
 
     if (!strcmp(Name, GRALLOC_HARDWARE_FB0))

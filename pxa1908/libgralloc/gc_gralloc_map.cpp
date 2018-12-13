@@ -88,7 +88,7 @@ gc_gralloc_map(
     void** Vaddr
     )
 {
-    int error;
+    log_func_entry;
     uint32_t Address;
     void *Memory;
     private_handle_t * hnd = (private_handle_t *) Handle;
@@ -115,14 +115,14 @@ gc_gralloc_map(
         return 0;
     }
 
-    error = gcoSURF_Lock(hnd->surface, &Address, &Memory);
-    if( (error & 0x80000000) )
+    if( libgal::Inst().gcoSURF_Lock(hnd->surface, &Address, &Memory) != gcvSTATUS_OK )
     {
-        // char *strerr = gcoOS_DebugStatus2Name(error);
-        // gcoOS_DebugTrace("gcmONERROR: status=%d(%s) @ %s(%d)", error, strerr, __FUNCTION__, __LINE__);
         ALOGE("Failed to map hnd=%p", hnd);
         return -EINVAL;
     }
+    hnd->base = (int64_t)Memory;
+    hnd->lockAddr = Address;
+    *Vaddr = (void*)hnd->base;
 
     return 0;
 }
@@ -150,7 +150,7 @@ gc_gralloc_unmap(
     buffer_handle_t Handle
     )
 {
-    int res;
+    //log_func_entry;
     private_handle_t * hnd = (private_handle_t *) Handle;
 
     /* Only unmap non-framebuffer and mapped buffer. */
@@ -167,21 +167,15 @@ gc_gralloc_unmap(
         return 0;
     }
 
-    res = gcoSURF_Unlock(hnd->surface, 0);
-    if( res == gcvSTATUS_OK )
+    if( libgal::Inst().gcoSURF_Unlock(hnd->surface, 0) != gcvSTATUS_OK )
     {
-        hnd->lockAddr = 0;
-        hnd->base = 0;
-    }
-    else
-    {
-        // char *error = gcoOS_Debug_Status2Name(res);
-        // gcoOS_DebugTrace("gcmONERROR: status=%d(%s) @ %s(%d)", res, error, __FUNCTION__, __LINE__);
-        ALOGE("Failed to unmap buffer=%p, status=%d", hnd, res);
-        res = -EINVAL;
+        ALOGE("Failed to unmap buffer=%p", hnd);
+        return -EINVAL;
     }
 
-    return res;
+    hnd->lockAddr = 0;
+    hnd->base = 0;
+    return 0;
 }
 
 /*******************************************************************************
@@ -208,6 +202,7 @@ gc_gralloc_register_buffer(
     buffer_handle_t Handle
     )
 {
+    log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
     gceSTATUS status;
     gcoSURF surface = NULL;
@@ -220,13 +215,13 @@ gc_gralloc_register_buffer(
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
 
-    status = gcoOS_ModuleConstructor();
+    status = libgal::Inst().gcoOS_ModuleConstructor();
     if( status != gcvSTATUS_OK )
     {
         goto ON_ERROR;
     }
 
-    gcoHAL_GetHardwareType(0, &hwtype);
+    libgal::Inst().gcoHAL_GetHardwareType(0, &hwtype);
     setHwType71D0(hnd->allocUsage);
 
     if( hnd->surface )
@@ -237,7 +232,7 @@ gc_gralloc_register_buffer(
             if( (hnd->allocUsage & 4) == 0 )
                 flags = gcvSURF_BITMAP;
 
-            status = gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, flags, hnd->surfFormat, hnd->pool, &surface);
+            status = libgal::Inst().gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, flags, hnd->surfFormat, hnd->pool, &surface);
             if( status )
             {
                 goto ON_ERROR;
@@ -245,7 +240,7 @@ gc_gralloc_register_buffer(
 
             if( gc_gralloc_map(hnd, &Vaddr) )
             {
-                status = gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1);
+                status = libgal::Inst().gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1);
                 if( status )
                 {
                     goto ON_ERROR;
@@ -255,25 +250,25 @@ gc_gralloc_register_buffer(
             }
             goto LABEL_30;
         }
-        status = gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface);
+        status = libgal::Inst().gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface);
         if( status >= 0 )
         {
-            if( hnd->samples <= 0 || gcoSURF_SetSamples(surface, hnd->samples) >= 0 )
+            if( hnd->samples <= 0 || libgal::Inst().gcoSURF_SetSamples(surface, hnd->samples) >= 0 )
             {
                 surface->totalSize[22] = hnd->size;
-                gcoHAL_ImportVideoMemory(hnd->infoA1, &v40);
+                libgal::Inst().gcoHAL_ImportVideoMemory(hnd->infoA1, &v40);
                 surface->totalSize[41] = v40;
                 surface->totalSize[27] = hnd->pool;
                 surface->totalSize[39] = hnd->infoB2;
                 if ( hnd->infoB1 )
-                    gcoHAL_ImportVideoMemory(hnd->infoB1, &v40);
+                    libgal::Inst().gcoHAL_ImportVideoMemory(hnd->infoB1, &v40);
                 surface->totalSize[104] = v40;
                 surface->totalSize[90] = hnd->infoA2;
                 surface->totalSize[102] = hnd->infoB3;
-                status = gcoSURF_Lock(surface, 0, 0);
+                status = libgal::Inst().gcoSURF_Lock(surface, 0, 0);
                 if ( (status & 0x80000000) == 0 )
                 {
-                    status = gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, 1);
+                    status = libgal::Inst().gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, 1);
                     if ( status >= 0 )
                     {
                         hnd->surface = surface;
@@ -289,7 +284,7 @@ LABEL_30:
 
     if( hnd->signal )
     {
-        status = gcoOS_MapSignal(hnd->signal, &signal);
+        status = libgal::Inst().gcoOS_MapSignal(hnd->signal, &signal);
         if( status )
         {
             goto ON_ERROR;
@@ -299,9 +294,9 @@ LABEL_30:
 
     if( hnd->shAddr )
     {
-        gcoSURF_BindShBuffer(surface, hnd->shAddr);
+        libgal::Inst().gcoSURF_BindShBuffer(surface, hnd->shAddr);
     }
-    gcoHAL_SetHardwareType(0, hwtype);
+    libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
 
     return 0;
 
@@ -315,11 +310,11 @@ ON_ERROR:
     if( Vaddr )
         gc_gralloc_unmap(hnd);
     if( surface )
-        gcoSURF_Destroy(surface);
+        libgal::Inst().gcoSURF_Destroy(surface);
     if( signal )
-        gcoOS_DestroySignal(0, signal);
+        libgal::Inst().gcoOS_DestroySignal(0, signal);
 
-    gcoHAL_SetHardwareType(0, hwtype);
+    libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
     return -EINVAL;
 }
 
@@ -347,8 +342,8 @@ gc_gralloc_unregister_buffer(
     buffer_handle_t Handle
     )
 {
+    //log_func_entry;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
-    gceSTATUS status;
 
     (void*)Module;
 
@@ -359,53 +354,52 @@ gc_gralloc_unregister_buffer(
 
     private_handle_t* hnd = (private_handle_t*)Handle;
 
-    gcoHAL_GetHardwareType(0, &hwtype);
+    libgal::Inst().gcoHAL_GetHardwareType(0, &hwtype);
     setHwType71D0(hnd->allocUsage);
     if( hnd->base )
         gc_gralloc_unmap(hnd);
 
     if( hnd->signal )
     {
-        status = gcoOS_UnmapSignal(hnd->signal);
-        if( status != gcvSTATUS_OK )
+        if( libgal::Inst().gcoOS_UnmapSignal(hnd->signal) != gcvSTATUS_OK )
         {
-            // gcoOS_DebugTrace("gcmONERROR: status=%d(%s) @ %s(%d)", status, gcoOS_DebugStatus2Name(status), __FUNCTION__, __LINE__);
-            gcoHAL_SetHardwareType(0, hwtype);
+            libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
             return -EINVAL;
         }
         hnd->signal = 0;
         hnd->signalHigh32Bits = 0;
     }
-    if( hnd->surface )
+    if( hnd->surface == NULL )
     {
-        gcoSURF_Destroy(hnd->surface);
-        hnd->clientPID = 0;
-        if( hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM )
-        {
-            status = gcoHAL_Commit(0, gcvTRUE);
-            if( status != gcvSTATUS_OK )
-            {
-                // gcoOS_DebugTrace(0, "gcmONERROR: status=%d(%s) @ %s(%d)", status, gcoOS_DebugStatus2Name(status), __FUNCTION__, __LINE__);
-                gcoHAL_SetHardwareType(0, hwtype);
-                return -EINVAL;
-            }
-        }
-        else
-        {
-            status = gcoHAL_Commit(0, gcvFALSE);
-            if( status != gcvSTATUS_OK )
-            {
-                // gcoOS_DebugTrace(0, "gcmONERROR: status=%d(%s) @ %s(%d)", status, gcoOS_DebugStatus2Name(status), __FUNCTION__, __LINE__);
-                gcoHAL_SetHardwareType(0, hwtype);
-                return -EINVAL;
-            }
-        }
-        gcoHAL_SetHardwareType(0, hwtype);
-        return 0;
+        libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
+        return -EINVAL;
     }
 
-    // gcoOS_DebugTrace(0, "gcmONERROR: status=%d(%s) @ %s(%d)", status, gcoOS_DebugStatus2Name(status), __FUNCTION__, __LINE__);
-    return -EINVAL;
+    if( libgal::Inst().gcoSURF_Destroy(hnd->surface) != gcvSTATUS_OK )
+    {
+        libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
+        return -EINVAL;
+    }
+    hnd->clientPID = 0;
+    if( hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM )
+    {
+        if( libgal::Inst().gcoHAL_Commit(0, gcvTRUE) != gcvSTATUS_OK )
+        {
+            libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
+            return -EINVAL;
+        }
+    }
+    else
+    {
+        if( libgal::Inst().gcoHAL_Commit(0, gcvFALSE) != gcvSTATUS_OK )
+        {
+            libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
+            return -EINVAL;
+        }
+    }
+
+    libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
+    return 0;
 }
 
 /*******************************************************************************
@@ -445,6 +439,7 @@ gc_gralloc_lock(
     void ** Vaddr
     )
 {
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
 
@@ -466,19 +461,19 @@ gc_gralloc_lock(
 
     *Vaddr = (void*)hnd->base;
     hnd->lockUsage = Usage;
-    gcoHAL_GetHardwareType(0, &hwtype);
+    libgal::Inst().gcoHAL_GetHardwareType(0, &hwtype);
 
     setHwType71D0(hnd->allocUsage);
 
-    if( (hnd->flags & (private_handle_t::PRIV_FLAGS_USES_PMEM_ADSP|private_handle_t::PRIV_FLAGS_USES_PMEM)) == private_handle_t::PRIV_FLAGS_USES_PMEM && (Usage & 0x40000000) == 0 )
+    if( (hnd->flags & (private_handle_t::PRIV_FLAGS_USES_PMEM_ADSP|private_handle_t::PRIV_FLAGS_USES_PMEM)) == private_handle_t::PRIV_FLAGS_USES_PMEM && (Usage & GRALLOC_USAGE_PRIVATE_2) == 0 )
     {
         hnd->flags |= private_handle_t::PRIV_FLAGS_NEEDS_FLUSH;
     }
 
     if( hnd->signal )
-        gcoOS_WaitSignal(0, hnd->signal, gcvINFINITE);
+        libgal::Inst().gcoOS_WaitSignal(0, hnd->signal, gcvINFINITE);
 
-    gcoHAL_SetHardwareType(0, hwtype);
+    libgal::Inst().gcoHAL_SetHardwareType(0, hwtype);
 
     return 0;
 }
@@ -500,6 +495,7 @@ gc_gralloc_lock_ycbcr(
     android_ycbcr *ycbcr
     )
 {
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
     int stride;
     int colors[13];
@@ -515,17 +511,17 @@ gc_gralloc_lock_ycbcr(
         return -EINVAL;
     }
 
-    if( hnd->format != HAL_PIXEL_FORMAT_CbYCrY_420_I )
+    if( hnd->format != HAL_PIXEL_FORMAT_YCbCr_420_888 )
         return -EINVAL;
 
     if( gc_gralloc_lock(Module, Handle, Usage, Left, Top, Width, Height, (void**)colors) )
     {
-        gcoSURF_Lock(hnd->surface, 0, (void**)colors);
-        gcoSURF_Unlock(hnd->surface, 0);
+        libgal::Inst().gcoSURF_Lock(hnd->surface, 0, (void**)colors);
+        libgal::Inst().gcoSURF_Unlock(hnd->surface, 0);
         ycbcr->cb = (void*)colors[1];
         ycbcr->y = (void*)colors[0];
         ycbcr->cr = (void*)(colors[1]+1);
-        gcoSURF_GetAlignedSize(hnd->surface, 0, 0, &stride);
+        libgal::Inst().gcoSURF_GetAlignedSize(hnd->surface, 0, 0, &stride);
         ycbcr->chroma_step = 2;
         ycbcr->ystride = stride;
         ycbcr->cstride = stride;
@@ -562,6 +558,7 @@ gc_gralloc_unlock(
     buffer_handle_t Handle
 )
 {
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
 
     (void*)Module;
@@ -572,10 +569,10 @@ gc_gralloc_unlock(
     if( hnd->surface == NULL )
         return -EINVAL;
 
-    gcoSURF_UpdateTimeStamp(hnd->surface);
-    gcoSURF_PushSharedInfo(hnd->surface);
+    libgal::Inst().gcoSURF_UpdateTimeStamp(hnd->surface);
+    libgal::Inst().gcoSURF_PushSharedInfo(hnd->surface);
     if( hnd->lockUsage & GRALLOC_USAGE_SW_WRITE_MASK )
-        gcoSURF_CPUCacheOperation(hnd->surface, gcvCACHE_CLEAN);
+        libgal::Inst().gcoSURF_CPUCacheOperation(hnd->surface, gcvCACHE_CLEAN);
 
     if( (hnd->flags & (private_handle_t::PRIV_FLAGS_NEEDS_FLUSH|
                        private_handle_t::PRIV_FLAGS_USES_PMEM|
@@ -614,6 +611,7 @@ gc_gralloc_flush(
     uint32_t flags
     )
 {
+    //log_func_entry;
     private_handle_t * hnd = (private_handle_t *) Handle;
 
     mvmem_sync(hnd->master, flags);

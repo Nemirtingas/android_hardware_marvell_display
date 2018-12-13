@@ -35,17 +35,39 @@
 #include <linux/fb.h>
 
 #include "libgal.h"
+#include "libstock.h"
 
 struct private_module_t;
 struct private_handle_t;
 
 /* always use two FDs */
-#define PRIVATE_HANDLE_INT_COUNT      14
+//#define PRIVATE_HANDLE_INT_COUNT      14
+//#define PRIVATE_HANDLE_FD_COUNT        2
+#define PRIVATE_HANDLE_INT_COUNT      47
 #define PRIVATE_HANDLE_FD_COUNT        2
 #define GC_PRIVATE_HANDLE_INT_COUNT    47
 #define GC_PRIVATE_HANDLE_FD_COUNT    2
 
 #define GRALLOC_USAGE_MRVL_PRIVATE_1 0x400000
+
+class __DEBUG_CLASS_LOG__
+{
+    const char* _func;
+    public:
+        __DEBUG_CLASS_LOG__(int line, const char* func):_func(func)
+        {
+            ALOGE("Entering %s at line %d", _func, line);
+        }
+
+        ~__DEBUG_CLASS_LOG__()
+        {
+            ALOGE("Exiting %s", _func);
+        }
+};
+
+#define log_func_entry         __DEBUG_CLASS_LOG__ __debug_obj__(__LINE__, __func__)
+#define log_func_line(fmt,...) ALOGE("%s at %d: " fmt, __func__, __LINE__, ## __VA_ARGS__)
+
 
 struct private_module_t
 {

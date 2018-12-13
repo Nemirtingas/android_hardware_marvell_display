@@ -116,14 +116,16 @@ static int gralloc_alloc(struct alloc_device_t* dev,
     int w, int h, int format, int usage,
     buffer_handle_t* handle, int* stride)
 {
+    log_func_entry;
+
     int rel;
 
-    if( gcoOS_ModuleConstructor() )
+    if( libgal::Inst().gcoOS_ModuleConstructor() )
     {
         ALOGE("failed to module construct!");
         rel = -EINVAL;
     }
-    else if( usage & 0x1000 )
+    else if( usage & GRALLOC_USAGE_HW_FB )
     {
         rel = gralloc_alloc_framebuffer(dev, w, h, format, usage, handle, stride);
     }
@@ -139,10 +141,13 @@ static int gralloc_free(struct alloc_device_t* dev,
     buffer_handle_t handle)
 
 {
+    log_func_entry;
     int rel;
     private_handle_t *hnd = (private_handle_t*)handle;
-    if( hnd->flags & 1 )
+
+    if( hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER )
         rel = gralloc_free_framebuffer(dev, handle);
+        //return libstock::Inst().gralloc_free(dev, handle);
     else
         rel = gc_gralloc_free(dev, handle);
 
@@ -151,6 +156,7 @@ static int gralloc_free(struct alloc_device_t* dev,
 
 static int gralloc_close(struct hw_device_t * dev)
 {
+    log_func_entry;
     gralloc_context_t * ctx =
         reinterpret_cast<gralloc_context_t *>(dev);
 
@@ -165,18 +171,37 @@ static int gralloc_close(struct hw_device_t * dev)
 int gralloc_device_open(const hw_module_t* module, const char* name,
         hw_device_t** device)
 {
+    log_func_entry;
     int status = -EINVAL;
 
     if (!strcmp(name, GRALLOC_HARDWARE_GPU0))
     {
-        /* Open alloc device. */
-        gralloc_context_t * dev;
+        status = libstock::Inst().gralloc_device_open(module, name, device);
+
+        gralloc_context_t *dev = (gralloc_context_t*)*device;
+
+        if( libstock::Inst().gralloc_close == NULL )
+            libstock::Inst().gralloc_close = dev->device.common.close;
+
+        if( libstock::Inst().gralloc_alloc == NULL )
+            libstock::Inst().gralloc_alloc = dev->device.alloc;
+
+        if( libstock::Inst().gralloc_free == NULL )
+            libstock::Inst().gralloc_free = dev->device.free;
+
+        libstock::Inst().gralloc_close((hw_device_t*)dev);
+
+        //dev->device.common.close = gralloc_close;
+        //dev->device.alloc = gralloc_alloc;
+        //dev->device.free = gralloc_free;
+
+        // Open alloc device.
         dev = (gralloc_context_t *) malloc(sizeof (*dev));
 
-        /* Initialize our state here */
+        // Initialize our state here
         memset(dev, 0, sizeof (*dev));
 
-        /* initialize the procs */
+        // initialize the procs
         dev->device.common.tag     = HARDWARE_DEVICE_TAG;
         dev->device.common.version = 0;
         dev->device.common.module  = const_cast<hw_module_t *>(module);
@@ -184,13 +209,18 @@ int gralloc_device_open(const hw_module_t* module, const char* name,
         dev->device.alloc          = gralloc_alloc;
         dev->device.free           = gralloc_free;
 
-        *device = &dev->device.common;
+        *device = (hw_device_t*)dev;
         status = 0;
+    }
+    else if( !strncmp(name, GRALLOC_HARDWARE_FB0, 2) )
+    {
+        // Open framebuffer device.
+        //status = fb_device_open(module, name, device);
+        return libstock::Inst().gralloc_device_open(module, name, device);
     }
     else
     {
-        /* Open framebuffer device. */
-        status = fb_device_open(module, name, device);
+        ALOGE("Invalid device name");
     }
 
     return status;
@@ -201,6 +231,7 @@ int gralloc_device_open(const hw_module_t* module, const char* name,
 
 int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, int usage, buffer_handle_t* pHandle, int *pStride)
 {
+    log_func_entry;
     int numBytes;
     int lineSize;
 
@@ -221,7 +252,8 @@ int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, 
     }
 
     private_module_t *m = (private_module_t*)device->common.module;
-    lineSize = _ALIGN(numBytes*w, 4);
+    lineSize = numBytes*w;
+    lineSize = _ALIGN(lineSize, 4);
     pthread_mutex_lock(&m->lock);
 
     if (m->framebuffer == NULL) {
@@ -238,6 +270,7 @@ int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, 
     const size_t bufferSize = m->finfo.line_length * (m->info.yres_virtual / numBuffers);
     if (bufferMask >= ((1LU<<numBuffers)-1)) {
         // We ran out of buffers.
+        log_func_line("Out of buffer %d,%d", bufferMask, (1<<numBuffers)-1);
         pthread_mutex_unlock(&m->lock);
         return -ENOMEM;
     }
@@ -265,7 +298,7 @@ int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, 
     *pStride = lineSize / numBytes;
     *pStride = m->info.xres_virtual;
 
-    if( gc_gralloc_wrap(*pHandle, w, h, ::format, *pStride, hnd->offset + m->finfo.smem_start, (void*)hnd->base) )
+    if( gc_gralloc_wrap(hnd, w, h, ::format, *pStride, hnd->offset + m->finfo.smem_start, (void*)hnd->base) )
     {
         ALOGE("%s: failed to wrap", "gralloc_alloc_framebuffer");
     }
@@ -275,6 +308,7 @@ int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, 
 
 int gralloc_free_framebuffer(alloc_device_t *device, buffer_handle_t handle)
 {
+    log_func_entry;
     private_module_t *module = (private_module_t*)device->common.module;
     private_handle_t *hnd = (private_handle_t*)handle;
 
@@ -296,10 +330,14 @@ int gralloc_free_framebuffer(alloc_device_t *device, buffer_handle_t handle)
 int gralloc_register_buffer(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
+    log_func_entry;
+
+    libstock::Inst().gralloc_register_buffer(module, handle);
+
     private_handle_t *hnd = (private_handle_t*)handle;
     int rel;
 
-    if( hnd->flags & 1 )
+    if( hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER )
         rel = -EINVAL;
     else
         rel = gc_gralloc_register_buffer(module, handle);
@@ -310,10 +348,11 @@ int gralloc_register_buffer(gralloc_module_t const* module,
 int gralloc_unregister_buffer(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
+    log_func_entry;
     private_handle_t *hnd = (private_handle_t*)handle;
     int rel;
 
-    if( hnd->flags & 1 )
+    if( hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER )
         rel = -EINVAL;
     else
         rel = gc_gralloc_unregister_buffer(module, handle);
@@ -326,10 +365,11 @@ int gralloc_lock(gralloc_module_t const* module,
         int l, int t, int w, int h,
         void** vaddr)
 {
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)handle;
     int rel;
 
-    if( (hnd->flags & 1) == 0 )
+    if( (hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER) == 0 )
         return gc_gralloc_lock(module, handle, usage, l, t, w, h, vaddr);
 
     if( vaddr )
@@ -341,10 +381,11 @@ int gralloc_lock(gralloc_module_t const* module,
 int gralloc_unlock(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)handle;
     int rel;
 
-    if( hnd->flags & 1 )
+    if( hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER )
         rel = 0;
     else
         rel = gc_gralloc_unlock(module, handle);
@@ -355,12 +396,14 @@ int gralloc_unlock(gralloc_module_t const* module,
 // https://android.googlesource.com/platform/system/core/+/master/libsystem/include/system/graphics.h for struct android_ycbcr*
 int gralloc_lock_ycbcr(gralloc_module_t const* module, buffer_handle_t handle, int usage, int l, int t, int w, int h, android_ycbcr *ycbcr )
 {
+    log_func_entry;
     return gc_gralloc_lock_ycbcr(module, handle, usage, l, t, w, h, ycbcr);
 }
 
 int gralloc_perform(struct gralloc_module_t const* module,
         int operation, ... )
 {
+    //log_func_entry;
     return 0;
 }
 
