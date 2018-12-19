@@ -2,7 +2,14 @@
 
 #include "gralloc_priv.h"
 
+#include <hardware/hardware.h>
+#include <hardware/gralloc.h>
 #include <cutils/log.h>
+
+struct gralloc_context_t
+{
+alloc_device_t device;
+};
 
 libstock::libstock():_lib(dlopen("/system/lib/hw/gralloc.stock.so", RTLD_NOW)),gralloc_close(NULL), gralloc_alloc(NULL),gralloc_free(NULL)
 {
@@ -22,16 +29,21 @@ libstock::libstock():_lib(dlopen("/system/lib/hw/gralloc.stock.so", RTLD_NOW)),g
 
     dlsym(gc_gralloc_alloc, "_Z16gc_gralloc_allocP14alloc_device_tiiiiPPK13native_handlePi");
     dlsym(gc_gralloc_wrap, "_Z15gc_gralloc_wrapP16private_handle_tiiiimPv");
+    dlsym(gc_gralloc_lock_ycbcr, "_Z21gc_gralloc_lock_ycbcrPK16gralloc_module_tPK13native_handleiiiiiP13android_ycbcr");
+    dlsym(gc_gralloc_lock, "_Z15gc_gralloc_lockPK16gralloc_module_tPK13native_handleiiiiiPPv");
 
     dlsym(gralloc_alloc_framebuffer, "_Z25gralloc_alloc_framebufferP14alloc_device_tiiiiPPK13native_handlePi");
 
-    ALOGE("%s: %p", "gralloc_device_open", gralloc_device_open);
-    ALOGE("%s: %p", "gralloc_register_buffer", gralloc_register_buffer);
-    ALOGE("%s: %p", "gralloc_unregister_buffer", gralloc_unregister_buffer);
-    ALOGE("%s: %p", "gralloc_lock", gralloc_lock);
-    ALOGE("%s: %p", "gralloc_unlock", gralloc_unlock);
-    ALOGE("%s: %p", "gralloc_perform", gralloc_perform);
-    ALOGE("%s: %p", "gralloc_lock_ycbcr", gralloc_lock_ycbcr);
+    gralloc_context_t *dev;
+    gralloc_device_open(0, "gpu0", (hw_device_t**)&dev);
+
+    gralloc_close = dev->device.common.close;
+
+    gralloc_alloc = dev->device.alloc;
+
+    gralloc_free = dev->device.free;
+
+    gralloc_close((hw_device_t*)dev);
 }
 
 libstock::~libstock()

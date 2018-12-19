@@ -1,4 +1,4 @@
-display-hals := libgralloc
+display-hals := libgralloc libGAL
 #display-hals := libgralloc libcopybit libvirtual
 #display-hals += libhwcomposer liboverlay libqdutils libexternal libqservice
 #display-hals += libmemtrack

@@ -440,54 +440,48 @@ gcePOOL;
 
 typedef gcsSURF_FORMAT_INFO *gcsSURF_FORMAT_INFO_PTR;
 
-class libgal
-{
-    void *_lib;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    libgal();
-    ~libgal();
-public:
-    static libgal& Inst()
-    {
-        static libgal lib;
-        return lib;
-    }
+gceSTATUS gcoOS_ModuleConstructor();
+gceSTATUS gcoOS_DestroySignal(gcoOS Os, gctSIGNAL Signal);
+gceSTATUS gcoOS_WaitSignal(gcoOS Os, gctSIGNAL Signal, gctUINT32 Wait);
+gceSTATUS gcoOS_MapSignal(gctSIGNAL  RemoteSignal, gctSIGNAL * LocalSignal);
+gceSTATUS gcoOS_UnmapSignal(gctSIGNAL Signal);
+gceSTATUS gcoOS_DeviceControl(gcoOS Os, gctUINT32 IoControlCode, gctPOINTER InputBuffer, gctSIZE_T InputBufferSize, gctPOINTER OutputBuffer, gctSIZE_T OutputBufferSize);
+gceSTATUS gcoOS_GetBaseAddress(gcoOS Os, gctUINT32_PTR BaseAddress);
 
-    gceSTATUS (*gcoOS_ModuleConstructor)();
-    gceSTATUS (*gcoOS_DestroySignal)(gcoOS Os, gctSIGNAL Signal);
-    gceSTATUS (*gcoOS_WaitSignal)(gcoOS Os, gctSIGNAL Signal, gctUINT32 Wait);
-    gceSTATUS (*gcoOS_MapSignal)(gctSIGNAL  RemoteSignal, gctSIGNAL * LocalSignal);
-    gceSTATUS (*gcoOS_UnmapSignal)(gctSIGNAL Signal);
-    gceSTATUS (*gcoOS_DeviceControl)(gcoOS Os, gctUINT32 IoControlCode, gctPOINTER InputBuffer, gctSIZE_T InputBufferSize, gctPOINTER OutputBuffer, gctSIZE_T OutputBufferSize);
-    gceSTATUS (*gcoOS_GetBaseAddress)(gcoOS Os, gctUINT32_PTR BaseAddress);
+gceSTATUS gcoSURF_Construct(gcoHAL Hal, gctUINT Width, gctUINT Height, gctUINT Depth, gceSURF_TYPE Type, gceSURF_FORMAT Format, gcePOOL Pool, gcoSURF * Surface);
+gceSTATUS gcoSURF_Lock(gcoSURF Surface, gctUINT32 * Address, gctPOINTER * Memory);
+gceSTATUS gcoSURF_Unlock(gcoSURF Surface, gctPOINTER Memory);
+gceSTATUS gcoSURF_Destroy(gcoSURF Surface);
+gceSTATUS gcoSURF_UpdateTimeStamp(gcoSURF Surface);
+gceSTATUS gcoSURF_PushSharedInfo(gcoSURF Surface);
+gceSTATUS gcoSURF_QueryFormat(gceSURF_FORMAT Format, gcsSURF_FORMAT_INFO_PTR *Info);
+gceSTATUS gcoSURF_CPUCacheOperation(gcoSURF Surface, gceCACHEOPERATION op);
+gceSTATUS gcoSURF_GetAlignedSize(gcoSURF Surface,gctUINT * Width,gctUINT * Height,gctINT * Stride);
+gceSTATUS gcoSURF_SetBuffer(gcoSURF Surface, gceSURF_TYPE Type, gceSURF_FORMAT Format, gctUINT Stride, gctPOINTER Logical, gctUINT32 Physical);
+gceSTATUS gcoSURF_SetWindow(gcoSURF Surface, gctUINT X, gctUINT Y, gctUINT Width, gctUINT Height);
+gceSTATUS gcoSURF_SetFlags(gcoSURF Surface,gceSURF_FLAG Flag,gctBOOL Value);
+gceSTATUS gcoSURF_AllocShBuffer(gcoSURF Surface,gctSHBUF * ShBuf);
+gceSTATUS gcoSURF_BindShBuffer(gcoSURF Surface,gctSHBUF ShBuf);
+gceSTATUS gcoSURF_MapUserSurface(gcoSURF Surface,gctUINT Alignment,gctPOINTER Logical,gctUINT32 Physical);
+gceSTATUS gcoSURF_SetSamples(gcoSURF Surface,gctUINT Samples);
+gceSTATUS gcoSURF_QueryVidMemNode(gcoSURF Surface,gcuVIDMEM_NODE_PTR * Node,gcePOOL * Pool,gctUINT_PTR Bytes);
+gceSTATUS gcoSURF_SetRect(gcoSURF Surface, gctUINT Width, gctUINT Height);
 
-    gceSTATUS (*gcoSURF_Construct)(gcoHAL Hal, gctUINT Width, gctUINT Height, gctUINT Depth, gceSURF_TYPE Type, gceSURF_FORMAT Format, gcePOOL Pool, gcoSURF * Surface);
-    gceSTATUS (*gcoSURF_Lock)(gcoSURF Surface, gctUINT32 * Address, gctPOINTER * Memory);
-    gceSTATUS (*gcoSURF_Unlock)(gcoSURF Surface, gctPOINTER Memory);
-    gceSTATUS (*gcoSURF_Destroy)(gcoSURF Surface);
-    gceSTATUS (*gcoSURF_UpdateTimeStamp)(gcoSURF Surface);
-    gceSTATUS (*gcoSURF_PushSharedInfo)(gcoSURF Surface);
-    gceSTATUS (*gcoSURF_QueryFormat)(gceSURF_FORMAT Format, gcsSURF_FORMAT_INFO_PTR *Info);
-    gceSTATUS (*gcoSURF_CPUCacheOperation)(gcoSURF Surface, gceCACHEOPERATION op);
-    gceSTATUS (*gcoSURF_GetAlignedSize)(gcoSURF Surface,gctUINT * Width,gctUINT * Height,gctINT * Stride);
-    gceSTATUS (*gcoSURF_SetBuffer)(gcoSURF Surface, gceSURF_TYPE Type, gceSURF_FORMAT Format, gctUINT Stride, gctPOINTER Logical, gctUINT32 Physical);
-    gceSTATUS (*gcoSURF_SetWindow)(gcoSURF Surface, gctUINT X, gctUINT Y, gctUINT Width, gctUINT Height);
-    gceSTATUS (*gcoSURF_SetFlags)(gcoSURF Surface,gceSURF_FLAG Flag,gctBOOL Value);
-    gceSTATUS (*gcoSURF_AllocShBuffer)(gcoSURF Surface,gctSHBUF * ShBuf);
-    gceSTATUS (*gcoSURF_BindShBuffer)(gcoSURF Surface,gctSHBUF ShBuf);
-    gceSTATUS (*gcoSURF_MapUserSurface)(gcoSURF Surface,gctUINT Alignment,gctPOINTER Logical,gctUINT32 Physical);
-    gceSTATUS (*gcoSURF_SetSamples)(gcoSURF Surface,gctUINT Samples);
-    gceSTATUS (*gcoSURF_QueryVidMemNode)(gcoSURF Surface,gcuVIDMEM_NODE_PTR * Node,gcePOOL * Pool,gctUINT_PTR Bytes);
-    gceSTATUS (*gcoSURF_SetRect)(gcoSURF Surface, gctUINT Width, gctUINT Height);
+gceSTATUS gcoHAL_GetHardwareType(gctINT32,  gceHARDWARE_TYPE *hwtype);
+gceSTATUS gcoHAL_SetHardwareType(gctINT32,  gceHARDWARE_TYPE hwtype);
+gceSTATUS gcoHAL_ImportVideoMemory(gctUINT32 Name,gctUINT32 * Handle);
+gceSTATUS gcoHAL_Commit(gcoHAL Hal, gctBOOL Stall);
+gceSTATUS gcoHAL_QueryPixelPipesInfo(gctUINT32 * pixelPipes,gctUINT32 * resolveAlignmentX,gctUINT32 * resolveAlignmentY);
+gceSTATUS gcoHAL_NameVideoMemory(gctUINT32 Handle,gctUINT32 * Name);
 
-    gceSTATUS (*gcoHAL_GetHardwareType)(gctINT32,  gceHARDWARE_TYPE *hwtype);
-    gceSTATUS (*gcoHAL_SetHardwareType)(gctINT32,  gceHARDWARE_TYPE hwtype);
-    gceSTATUS (*gcoHAL_ImportVideoMemory)(gctUINT32 Name,gctUINT32 * Handle);
-    gceSTATUS (*gcoHAL_Commit)(gcoHAL Hal, gctBOOL Stall);
-    gceSTATUS (*gcoHAL_QueryPixelPipesInfo)(gctUINT32 * pixelPipes,gctUINT32 * resolveAlignmentX,gctUINT32 * resolveAlignmentY);
-    gceSTATUS (*gcoHAL_NameVideoMemory)(gctUINT32 Handle,gctUINT32 * Name);
+gceSTATUS gcoTEXTURE_GetClosestFormat(gcoHAL Hal,gceSURF_FORMAT InFormat,gceSURF_FORMAT* OutFormat);
 
-    gceSTATUS (*gcoTEXTURE_GetClosestFormat)(gcoHAL Hal,gceSURF_FORMAT InFormat,gceSURF_FORMAT* OutFormat);
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif

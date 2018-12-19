@@ -66,9 +66,12 @@ public:
     int (*fb_device_open)(const hw_module_t* module, const char* name,
     hw_device_t** device);
 
-    int (*gc_gralloc_alloc)(alloc_device_t * Dev,int Width,int Height,int Format,int Usage,buffer_handle_t * Handle,int * Stride);
 
+
+    int (*gc_gralloc_alloc)(alloc_device_t * Dev,int Width,int Height,int Format,int Usage,buffer_handle_t * Handle,int * Stride);
     int (*gc_gralloc_wrap)(buffer_handle_t Handle, int w, int h, int format, int stride, int offset, void *vaddr);
+    int (*gc_gralloc_lock)(gralloc_module_t const* Module, buffer_handle_t Handle,int Usage, int Left, int Top, int Width, int Height, void ** Vaddr);
+    int (*gc_gralloc_lock_ycbcr)(gralloc_module_t const * Module,  buffer_handle_t Handle, int Usage, int Left, int Top, int Width, int Height, android_ycbcr *ycbcr);
 };
 
 #endif // __LIBSTOCK_H

@@ -32,7 +32,7 @@
 
 #include <mvmem.h>
 
-#include "libgal.h"
+#include <libGAL.h>
 #include "gralloc_priv.h"
 
 struct private_module_t;
@@ -152,4 +152,3 @@ gc_gralloc_notify_change(buffer_handle_t Handle);
 int setHwType71D0(int AllocUsage);
 
 #endif /* __gc_gralloc_gr_h_ */
-
