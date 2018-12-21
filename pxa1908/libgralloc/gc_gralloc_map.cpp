@@ -82,13 +82,13 @@ pid_t gettid() { return syscall(__NR_gettid);}
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-int
+extern int
 gc_gralloc_map(
     buffer_handle_t Handle,
     void** Vaddr
     )
 {
-    log_func_entry;
+    //log_func_entry;
     uint32_t Address;
     void *Memory;
     private_handle_t * hnd = (private_handle_t *) Handle;
@@ -145,7 +145,7 @@ gc_gralloc_map(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unmap(
     buffer_handle_t Handle
     )
@@ -196,27 +196,30 @@ gc_gralloc_unmap(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_register_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     )
 {
     log_func_entry;
+
+    //ALOGE("Not implemented gc_gralloc_register_buffer, using stock function");
+    //return libstock::Inst().gralloc_register_buffer(Module, Handle);
+
     private_handle_t *hnd = (private_handle_t*)Handle;
-    gceSTATUS status;
+    int status;
     gcoSURF surface = NULL;
     void *Vaddr = NULL;
     gctSIGNAL signal = 0;
-    gctUINT32 v40;
+    gctUINT32 videoMem;
 
     (void*)Module;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
 
-    status = gcoOS_ModuleConstructor();
-    if( status != gcvSTATUS_OK )
+    if( gcoOS_ModuleConstructor() != gcvSTATUS_OK )
     {
         goto ON_ERROR;
     }
@@ -232,70 +235,79 @@ gc_gralloc_register_buffer(
             if( (hnd->allocUsage & 4) == 0 )
                 flags = gcvSURF_BITMAP;
 
-            status = gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, flags, hnd->surfFormat, hnd->pool, &surface);
-            if( status )
+            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, flags, hnd->surfFormat, hnd->pool, &surface) )
             {
                 goto ON_ERROR;
             }
 
-            if( gc_gralloc_map(hnd, &Vaddr) )
+            status = gc_gralloc_map(hnd, &Vaddr);
+            if( status == gcvSTATUS_OK )
             {
-                status = gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1);
-                if( status )
+                if( gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1) != gcvSTATUS_OK )
                 {
                     goto ON_ERROR;
                 }
                 hnd->surfaceHigh32Bits = 0;
                 hnd->surface = surface;
             }
-            goto LABEL_30;
         }
-        status = gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface);
-        if( status >= 0 )
+        else
         {
-            if( hnd->samples <= 0 || gcoSURF_SetSamples(surface, hnd->samples) >= 0 )
+            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface) != gcvSTATUS_OK )
             {
-                surface->totalSize[22] = hnd->size;
-                gcoHAL_ImportVideoMemory(hnd->infoA1, &v40);
-                surface->totalSize[41] = v40;
-                surface->totalSize[27] = hnd->pool;
-                surface->totalSize[39] = hnd->infoB2;
-                if ( hnd->infoB1 )
-                    gcoHAL_ImportVideoMemory(hnd->infoB1, &v40);
-                surface->totalSize[104] = v40;
-                surface->totalSize[90] = hnd->infoA2;
-                surface->totalSize[102] = hnd->infoB3;
-                status = gcoSURF_Lock(surface, 0, 0);
-                if ( (status & 0x80000000) == 0 )
+                goto ON_ERROR;
+            }
+
+            if( hnd->samples > 0 )
+            {
+                if( gcoSURF_SetSamples(surface, hnd->samples) != gcvSTATUS_OK )
                 {
-                    status = gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, 1);
-                    if ( status >= 0 )
-                    {
-                        hnd->surface = surface;
-LABEL_30:
-                        if ( !(hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM) )
-                            if( gc_gralloc_map(hnd, &Vaddr) )
-                                goto ON_ERROR;
-                    }
+                    goto ON_ERROR;
                 }
             }
+            surface->totalSize[22] = hnd->size;
+            gcoHAL_ImportVideoMemory(hnd->infoA1, &videoMem);
+            surface->totalSize[41] = videoMem;
+            surface->totalSize[27] = hnd->pool;
+            surface->totalSize[39] = hnd->infoB2;
+            if( hnd->infoB1 )
+                gcoHAL_ImportVideoMemory(hnd->infoB1, &videoMem);
+            surface->totalSize[104] = videoMem;
+            surface->totalSize[90]  = hnd->infoA2;
+            surface->totalSize[102] = hnd->infoB3;
+            if( gcoSURF_Lock(surface, 0, 0) != gcvSTATUS_OK )
+            {
+                goto ON_ERROR;
+            }
+
+            if( gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, gcvTRUE) != gcvSTATUS_OK )
+            {
+                goto ON_ERROR;
+            }
+
+            hnd->surface = surface;
+            hnd->surfaceHigh32Bits = 0;
+            status = 0;
         }
+        if( !(hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM) )
+            status = gc_gralloc_map(hnd, &Vaddr);
+        if( status )
+            goto ON_ERROR;
     }
 
     if( hnd->signal )
     {
-        status = gcoOS_MapSignal(hnd->signal, &signal);
-        if( status )
+        if( gcoOS_MapSignal(hnd->signal, &signal) != gcvSTATUS_OK )
         {
             goto ON_ERROR;
         }
         hnd->signal = signal;
+        hnd->signalHigh32Bits = 0;
     }
 
     if( hnd->shAddr )
-    {
         gcoSURF_BindShBuffer(surface, hnd->shAddr);
-    }
+
     gcoHAL_SetHardwareType(0, hwtype);
 
     return 0;
@@ -336,7 +348,7 @@ ON_ERROR:
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unregister_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -427,7 +439,7 @@ gc_gralloc_unregister_buffer(
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-int
+extern int
 gc_gralloc_lock(
     gralloc_module_t const* Module,
     buffer_handle_t Handle,
@@ -439,8 +451,35 @@ gc_gralloc_lock(
     void ** Vaddr
     )
 {
-    log_func_entry;
-    return libstock::Inst().gc_gralloc_lock(Module, Handle, Usage, Left, Top, Width, Height, Vaddr);
+    //log_func_entry;
+
+    gceHARDWARE_TYPE hwtype;
+    private_handle_t *hnd = (private_handle_t*)Handle;
+
+    if( private_handle_t::validate(hnd) )
+        return -EINVAL;
+
+    if( hnd->surface == NULL )
+        return -EINVAL;
+
+    if( (Usage & hnd->allocUsage) != Usage )
+        ALOGW("Invalid access to buffer=%p: lockUsage=0x%08x, allocUsage=0x%08x", hnd, Usage, hnd->allocUsage);
+
+    *Vaddr = (void*)hnd->base;
+    hnd->lockAddr = Usage;
+    gcoHAL_GetHardwareType(0, &hwtype);
+    setHwType71D0(hnd->allocUsage);
+
+    if( (hnd->flags & (private_handle_t::PRIV_FLAGS_USES_PMEM_ADSP|private_handle_t::PRIV_FLAGS_USES_PMEM)) == private_handle_t::PRIV_FLAGS_USES_PMEM
+      && !(Usage & GRALLOC_USAGE_PRIVATE_2) )
+    {
+        hnd->flags |= private_handle_t::PRIV_FLAGS_NEEDS_FLUSH;
+    }
+    if( hnd->signal != NULL )
+        gcoOS_WaitSignal(0, hnd->signal, gcvINFINITE);
+
+    gcoHAL_SetHardwareType(0, hwtype);
+    return 0;
 }
 
 /*******************************************************************************
@@ -448,7 +487,7 @@ gc_gralloc_lock(
 **  gc_gralloc_ycbcr
 **
 */
-int
+extern int
 gc_gralloc_lock_ycbcr(
     gralloc_module_t const * Module,
     buffer_handle_t Handle,
@@ -460,8 +499,41 @@ gc_gralloc_lock_ycbcr(
     android_ycbcr *ycbcr
     )
 {
-    log_func_entry;
-    return libstock::Inst().gc_gralloc_lock_ycbcr(Module, Handle, Usage, Left, Top, Width, Height, ycbcr);
+    //log_func_entry;
+
+    int res;
+    int stride;
+    int colors[13];
+    private_handle_t *hnd = (private_handle_t*)Handle;
+    if( private_handle_t::validate(hnd) )
+        return -EINVAL;
+
+    if( hnd->surface == NULL )
+    {
+        ycbcr->cr = 0;
+        ycbcr->cb = 0;
+        ycbcr->y  = 0;
+        return -EINVAL;
+    }
+
+    if( hnd->format != HAL_PIXEL_FORMAT_YCbCr_420_888 )
+        return -EINVAL;
+
+    res = gc_gralloc_lock(Module, Handle, Usage, Left, Top, Width, Height, (void**)colors);
+    if( res == 0 )
+    {
+        gcoSURF_Lock(hnd->surface, 0, (gctPOINTER*)colors);
+        gcoSURF_Unlock(hnd->surface, 0);
+        ycbcr->cb = (void*)colors[1];
+        ycbcr->cr = (void*)(colors[1]+1);
+        ycbcr->y  = (void*)colors[1];
+        gcoSURF_GetAlignedSize(hnd->surface, 0, 0, &stride);
+        ycbcr->chroma_step = 2;
+        ycbcr->ystride = stride;
+        ycbcr->cstride = stride;
+    }
+
+    return res;
 }
 
 /*******************************************************************************
@@ -484,7 +556,7 @@ gc_gralloc_lock_ycbcr(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unlock(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -537,7 +609,7 @@ gc_gralloc_unlock(
 **      Nothing.
 */
 
-int
+extern int
 gc_gralloc_flush(
     buffer_handle_t Handle,
     uint32_t flags

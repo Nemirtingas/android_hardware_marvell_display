@@ -63,7 +63,7 @@ extern android::sp<android::IDisplayModel> displayModel;
 
 using namespace android;
 
-static int android_formats[] =
+extern "C" int android_formats[] =
 {
     HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED, gcvSURF_A8B8G8R8,
     HAL_PIXEL_FORMAT_RGBA_8888             , gcvSURF_A8B8G8R8,
@@ -98,13 +98,13 @@ static int android_formats[] =
 **      gceSURF_FORMAT HalFormat
 **          Pointer to hold hal pixel format.
 */
-static gceSTATUS
+extern gceSTATUS
 _ConvertAndroid2HALFormat(
     int Format,
     gceSURF_FORMAT * HalFormat
     )
 {
-    log_func_entry;
+    //log_func_entry;
     gceSTATUS status = gcvSTATUS_OK;
 
     switch (Format)
@@ -177,7 +177,7 @@ _ConvertAndroid2HALFormat(
     return status;
 }
 
-static int _ConvertFormatToSurfaceInfo(
+extern int _ConvertFormatToSurfaceInfo(
     int Format,
     int Width,
     int Height,
@@ -186,7 +186,7 @@ static int _ConvertFormatToSurfaceInfo(
     size_t *Size
     )
 {
-    log_func_entry;
+    //log_func_entry;
     size_t xstride = 0;
     size_t ystride = 0;
     size_t size = 0;
@@ -280,13 +280,13 @@ static int _ConvertFormatToSurfaceInfo(
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-int
+extern int
 _MapBuffer(
     gralloc_module_t const * Module,
     private_handle_t * Handle,
     void **Vaddr)
 {
-    log_func_entry;
+    //log_func_entry;
     int retCode = 0;
 
     retCode = gc_gralloc_map(Handle, Vaddr);
@@ -342,7 +342,7 @@ _MapBuffer(
 **      int * Stride
 **          Pointer to hold buffer stride.
 */
-static int
+extern int
 gc_gralloc_alloc_buffer(
     alloc_device_t * Dev,
     int Width,
@@ -405,6 +405,9 @@ gc_gralloc_alloc_buffer(
     gcuVIDMEM_NODE_PTR Node;
 
     private_handle_t *hnd;
+
+    ALOGE("Not implemented gc_gralloc_alloc_buffer, returning EINVAL");
+    return -EINVAL;
 
     /* Binder info. */
     IPCThreadState* ipc               = IPCThreadState::self();
@@ -910,7 +913,7 @@ LABEL_109:
 **      int Width
 **          Specified target buffer width.
 **
-**      int Hieght
+**      int Height
 **          Specified target buffer height.
 **
 **      int Format
@@ -927,7 +930,7 @@ LABEL_109:
 **      int * Stride
 **          Pointer to hold buffer stride.
 */
-int
+extern int
 gc_gralloc_alloc(
     alloc_device_t * Dev,
     int Width,
@@ -937,50 +940,58 @@ gc_gralloc_alloc(
     buffer_handle_t * Handle,
     int * Stride)
 {
-    log_func_entry;
+    //log_func_entry;
 
-    int err;
+    int err = -EINVAL;
 
     if (!Handle || !Stride)
     {
         return -EINVAL;
     }
 
-    //err = gc_gralloc_alloc_buffer(Dev, Width, Height, Format, Usage, Handle, Stride);
+    ALOGE("Not implemented gc_gralloc_alloc, using stock function");
     err = libstock::Inst().gc_gralloc_alloc(Dev, Width, Height, Format, Usage, Handle, Stride);
 
     return err;
 }
 
 
-int setHwType71D0(int AllocUsage)
+extern int setHwType71D0(int AllocUsage)
 {
+    //log_func_entry;
     static gceHARDWARE_TYPE hwtype = gcvHARDWARE_INVALID;
-    int buffer[81];
+    int buffer[80];
 
-    if( hwtype == 0 )
+    if( hwtype == gcvHARDWARE_INVALID )
     {
         buffer[0] = 39;
-        gcoOS_DeviceControl(0, 30000, buffer, 80*sizeof(int), buffer, 80*sizeof(int));
-        for( int i = 0; i < buffer[8]; ++i )
+        gcoOS_DeviceControl(0, 30000, buffer, sizeof(buffer), buffer, sizeof(buffer));
+        for ( int i = 0; i < buffer[8]; ++i )
         {
-            switch( buffer[i+9] )
+            switch ( buffer[i+9] )
             {
-                case gcvHARDWARE_3D: hwtype = gcvHARDWARE_3D; break;
-                case gcvHARDWARE_3D2D: hwtype = gcvHARDWARE_3D2D; break;
+                case gcvHARDWARE_3D:
+                    hwtype = gcvHARDWARE_3D;
+                    break;
+                case gcvHARDWARE_3D2D:
+                    hwtype = gcvHARDWARE_3D2D;
+                    break;
                 case gcvHARDWARE_2D:
-                    if( !(hwtype & ~gcvHARDWARE_VG) )
+                    if ( !(hwtype & ~gcvHARDWARE_VG) )
                         hwtype = gcvHARDWARE_2D;
                     break;
                 case gcvHARDWARE_VG:
-                    if( hwtype == gcvHARDWARE_INVALID )
+                    if ( hwtype == gcvHARDWARE_INVALID )
                         hwtype = gcvHARDWARE_VG;
+                    break;
+                default:
+                    continue;
             }
         }
-        if( hwtype == gcvHARDWARE_INVALID )
+        if ( !hwtype )
             ALOGE("Failed to get hardware types");
     }
-    if( (AllocUsage & 0x700000) == 0x600000 )
+    if( (AllocUsage & (GRALLOC_USAGE_RENDERSCRIPT|GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_MRVL_PRIVATE_1)) == (GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_MRVL_PRIVATE_1) )
         return gcoHAL_SetHardwareType(0, gcvHARDWARE_VG);
     else
         return gcoHAL_SetHardwareType(0, hwtype);
@@ -1004,13 +1015,13 @@ int setHwType71D0(int AllocUsage)
 **
 **      Nothing.
 */
-int
+extern int
 gc_gralloc_free(
     alloc_device_t * Dev,
     buffer_handle_t Handle
     )
 {
-    log_func_entry;
+    //log_func_entry;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
 
     if( private_handle_t::validate(Handle) )
@@ -1063,9 +1074,9 @@ gc_gralloc_free(
     return 0;
 }
 
-int gc_gralloc_notify_change(buffer_handle_t Handle)
+extern int gc_gralloc_notify_change(buffer_handle_t Handle)
 {
-    log_func_entry;
+    //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
@@ -1079,16 +1090,16 @@ int gc_gralloc_notify_change(buffer_handle_t Handle)
     return 0;
 }
 
-int setHwType71D4()
+extern int setHwType71D4()
 {
-    log_func_entry;
+    //log_func_entry;
     static gceHARDWARE_TYPE hwtype = gcvHARDWARE_INVALID;
-    int buffer[81];
+    int buffer[80];
 
     if( hwtype == 0 )
     {
         buffer[0] = 39;
-        gcoOS_DeviceControl(0, 30000, buffer, 80*sizeof(int), buffer, 80*sizeof(int));
+        gcoOS_DeviceControl(0, 30000, buffer, sizeof(buffer), buffer, sizeof(buffer));
         for( int i = 0; i < buffer[8]; ++i )
         {
             switch( buffer[i+9] )
@@ -1111,11 +1122,11 @@ int setHwType71D4()
     return gcoHAL_SetHardwareType(0, hwtype);
 }
 
-int
+extern int
 gc_gralloc_unwrap(buffer_handle_t Handle)
 {
-    log_func_entry;
-    gceHARDWARE_TYPE hwtype;
+    //log_func_entry;
+    gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
     private_handle_t *hnd = (private_handle_t*)Handle;
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
@@ -1130,10 +1141,10 @@ gc_gralloc_unwrap(buffer_handle_t Handle)
     return 0;
 }
 
-int
+extern int
 gc_gralloc_wrap(buffer_handle_t Handle, int w, int h, int format, int stride, int offset, void *vaddr)
 {
-    log_func_entry;
+   //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
     gceSTATUS status;
     gcoSURF surface = 0;
@@ -1143,8 +1154,6 @@ gc_gralloc_wrap(buffer_handle_t Handle, int w, int h, int format, int stride, in
     gctUINT32 base_addr;
     gctSHBUF shbuf;
     gcsSURF_FORMAT_INFO_PTR formatInfo;
-
-    //return libstock::Inst().gc_gralloc_wrap(Handle, w, h, format, stride, offset, vaddr);
 
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
@@ -1282,10 +1291,10 @@ gc_gralloc_wrap(buffer_handle_t Handle, int w, int h, int format, int stride, in
     return -EFAULT;
 }
 
-int
+extern int
 gc_gralloc_register_wrap(private_handle_t *Handle, int32_t offset, void* Vaddr)
 {
-    log_func_entry;
+    //log_func_entry;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
     gctUINT32 Memory;
     gceSTATUS status;
@@ -1322,15 +1331,10 @@ gc_gralloc_register_wrap(private_handle_t *Handle, int32_t offset, void* Vaddr)
         status = gcoOS_GetBaseAddress(0, &Memory);
         if( status != gcvSTATUS_OK )
         {
-            if( surface )
-            {
-                gcoSURF_Destroy(surface);
-                gcoHAL_Commit(0, gcvFALSE);
-            }
             gcoHAL_SetHardwareType(0, hwtype);
             return -EFAULT;
         }
-        offset -= (int32_t)Memory;
+        offset -= ((int32_t)Memory);
     }
     status = gcoSURF_Construct(0, Handle->dirtyWidth, Handle->dirtyHeight, 1, gcvSURF_BITMAP, Handle->surfFormat, gcvPOOL_USER, &surface);
     if( status != gcvSTATUS_OK )

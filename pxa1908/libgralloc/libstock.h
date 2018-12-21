@@ -63,9 +63,10 @@ public:
         int operation, ... );
 
 
-    int (*fb_device_open)(const hw_module_t* module, const char* name,
-    hw_device_t** device);
-
+    int (*fb_device_open)(const hw_module_t* module, const char* name, hw_device_t** device);
+    int (*fb_close)(struct hw_device_t * Dev);
+    int (*fb_post)(struct framebuffer_device_t * Dev, buffer_handle_t Buffer);
+    int (*fb_setSwapInterval)(struct framebuffer_device_t * Dev,int Interval);
 
 
     int (*gc_gralloc_alloc)(alloc_device_t * Dev,int Width,int Height,int Format,int Usage,buffer_handle_t * Handle,int * Stride);

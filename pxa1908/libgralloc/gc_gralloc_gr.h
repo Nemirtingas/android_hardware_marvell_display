@@ -49,23 +49,23 @@ roundUpToPageSize(size_t x)
 /* Framebuffer pixel format. */
 extern int format;
 
-int
+extern int
 mapFrameBufferLocked(
     struct private_module_t * Module
     );
 
-int
+extern int
 gc_gralloc_map(
     buffer_handle_t Handle,
     void** Vaddr
     );
 
-int
+extern int
 gc_gralloc_unmap(
     buffer_handle_t Handle
     );
 
-int
+extern int
 gc_gralloc_alloc(
     alloc_device_t * Dev,
     int Width,
@@ -76,25 +76,25 @@ gc_gralloc_alloc(
     int * Stride
     );
 
-int
+extern int
 gc_gralloc_free(
     alloc_device_t * Dev,
     buffer_handle_t Handle
     );
 
-int
+extern int
 gc_gralloc_register_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     );
 
-int
+extern int
 gc_gralloc_unregister_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     );
 
-int
+extern int
 gc_gralloc_lock(
     gralloc_module_t const * Module,
     buffer_handle_t Handle,
@@ -106,7 +106,7 @@ gc_gralloc_lock(
     void ** Vaddr
     );
 
-int
+extern int
 gc_gralloc_lock_ycbcr(
     gralloc_module_t const * Module,
     buffer_handle_t Handle,
@@ -118,37 +118,37 @@ gc_gralloc_lock_ycbcr(
     android_ycbcr *ycbcr
     );
 
-int
+extern int
 gc_gralloc_unlock(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     );
 
-int
+extern int
 gc_gralloc_perform(
     gralloc_module_t const * Module,
     int Operation,
     ...
     );
 
-int
+extern int
 gc_gralloc_flush(
     buffer_handle_t Handle,
     uint32_t flags
     );
 
-int
+extern int
 gc_gralloc_wrap(buffer_handle_t handle, int w, int h, int format, int stride, int offset, void *base);
 
-int
+extern int
 gc_gralloc_unwrap(buffer_handle_t Handle);
 
-int
+extern int
 gc_gralloc_register_wrap(private_handle_t *Handle, size_t offset, void* base);
 
-int
+extern int
 gc_gralloc_notify_change(buffer_handle_t Handle);
 
-int setHwType71D0(int AllocUsage);
+extern int setHwType71D0(int AllocUsage);
 
 #endif /* __gc_gralloc_gr_h_ */

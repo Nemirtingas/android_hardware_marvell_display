@@ -87,7 +87,7 @@
 
 
 /* Framebuffer pixel format table. */
-static const struct
+extern const struct
 {
     int      format;
     uint32_t bits_per_pixel;
@@ -138,13 +138,13 @@ struct fb_context_t
 **
 **      Nothing.
 */
-static int
+extern int
 fb_setSwapInterval(
     struct framebuffer_device_t * Dev,
     int Interval
     )
 {
-    log_func_entry;
+    //log_func_entry;
     if ((Interval < Dev->minSwapInterval)
     ||  (Interval > Dev->maxSwapInterval)
     )
@@ -174,13 +174,13 @@ fb_setSwapInterval(
 **
 **      Nothing.
 */
-static int
+extern int
 fb_post(
     struct framebuffer_device_t * Dev,
     buffer_handle_t Buffer
     )
 {
-    log_func_entry;
+    //log_func_entry;
     if (!Buffer)
     {
         return -EINVAL;
@@ -202,16 +202,15 @@ fb_post(
         return 0;
     }
     const size_t offset = hnd->base - m->framebuffer->base;
-    int mrvl_reserved = m->info.reserved[0];
     mmp_surface surface;
 
     m->info.activate = FB_ACTIVATE_VBL;
     m->info.yoffset  = offset / m->finfo.line_length;
 
     if( hnd->field_A4 )
-        mrvl_reserved |= 2;
+        m->info.reserved[0] |= 2;
     else
-        mrvl_reserved &= ~2;
+        m->info.reserved[0] &= ~2;
 
     surface.win.xsrc = m->info.xres;
     surface.win.ysrc = m->info.yres;
@@ -244,7 +243,7 @@ fb_post(
             break;
     }
 
-    surface.win.pitch[0] = m->info.xres_virtual * (m->info.bits_per_pixel >> 3);
+    surface.win.pitch[0] = m->info.xres_virtual * (m->info.bits_per_pixel/8);
     surface.win.pitch[1] = 0;
     surface.win.pitch[2] = 0;
 
@@ -263,6 +262,7 @@ fb_post(
         surface.addr.hdr_addr[0] = 0;
         surface.addr.hdr_addr[1] = 0;
         surface.addr.hdr_addr[2] = 0;
+        surface.addr.hdr_size[0] = 0;
         surface.flag = WAIT_VSYNC;
     }
     surface.addr.hdr_size[1] = 0;
@@ -271,9 +271,9 @@ fb_post(
     surface.fence_fd = -1;
     surface.fd = -1;
 
-    if (ioctl(m->framebuffer->fd, FB_IOCTL_FLIP_VSYNC, &surface) == -1)
+    if (ioctl(m->framebuffer->fd, FB_IOCTL_FLIP_USR_BUF, &surface) == -1)
     {
-        ALOGE("IOCTL:0x6D08 FB_IOCTL_FLIP_VSYNC FAILED:%s", strerror(errno));
+        ALOGE("IOCTL:0x6D08 FB_IOCTL_FLIP_USR_BUF FAILED:%s", strerror(errno));
         m->base.unlock((gralloc_module_t*)m,hnd);
         return -errno;
     }
@@ -296,23 +296,6 @@ fb_post(
 
 /*******************************************************************************
 **
-**  fb_compositionComplete
-**
-**  Sync with the hardware.
-**
-**  INPUT:
-**
-**      framebuffer_device_t * Dev
-**          Specified framebuffer device.
-**
-**  OUTPUT:
-**
-**      Nothing.
-*/
-
-
-/*******************************************************************************
-**
 **  mapFrameBufferLocked
 **
 **  Open framebuffer device and initialize.
@@ -326,12 +309,12 @@ fb_post(
 **
 **      Nothing.
 */
-int
+extern int
 mapFrameBufferLocked(
     struct private_module_t * Module
     )
 {
-    log_func_entry;
+    //log_func_entry;
     /* already initialized... */
     if (Module->framebuffer)
     {
@@ -401,40 +384,35 @@ mapFrameBufferLocked(
         ALOGI("Use default framebuffer pixel format=%d", format);
     }
 
-    if (format > 0)
+    /* Find specified pixel format info in table. */
+    for (i = 0;
+         i < sizeof (formatTable) / sizeof (formatTable[0]);
+         i++)
     {
-        /* Find specified pixel format info in table. */
-        for (i = 0;
-             i < sizeof (formatTable) / sizeof (formatTable[0]);
-             i++)
-        {
-             if (formatTable[i].format == format)
-             {
-                 /* Set pixel format detail. */
-                 info.bits_per_pixel = formatTable[i].bits_per_pixel;
-                 info.red.offset     = formatTable[i].red_offset;
-                 info.red.length     = formatTable[i].red_length;
-                 info.green.offset   = formatTable[i].green_offset;
-                 info.green.length   = formatTable[i].green_length;
-                 info.blue.offset    = formatTable[i].blue_offset;
-                 info.blue.length    = formatTable[i].blue_length;
-                 info.transp.offset  = formatTable[i].transp_offset;
-                 info.transp.length  = formatTable[i].transp_length;
+         if (formatTable[i].format == format)
+         {
+             /* Set pixel format detail. */
+             info.bits_per_pixel = formatTable[i].bits_per_pixel;
+             info.red.offset     = formatTable[i].red_offset;
+             info.red.length     = formatTable[i].red_length;
+             info.green.offset   = formatTable[i].green_offset;
+             info.green.length   = formatTable[i].green_length;
+             info.blue.offset    = formatTable[i].blue_offset;
+             info.blue.length    = formatTable[i].blue_length;
+             info.transp.offset  = formatTable[i].transp_offset;
+             info.transp.length  = formatTable[i].transp_length;
 
-                 break;
-             }
-        }
+             break;
+         }
+    }
 
-        if (i == sizeof (formatTable) / sizeof (formatTable[0]))
-        {
-            /* Can not find format info in table. */
-            ALOGE("%s Unkown format specified: %d", __FUNCTION__, format);
+    if (i == sizeof (formatTable) / sizeof (formatTable[0]))
+    {
+        /* Can not find format info in table. */
+        ALOGE("%s Unkown format specified: %d", __FUNCTION__, format);
 
-            /* Set to unknown format. */
-            format = 0;
-            close(fd);
-            return -EINVAL;
-        }
+        close(fd);
+        return -EINVAL;
     }
 
     /* Request NUM_BUFFERS screens (at least 2 for page flipping) */
@@ -573,6 +551,7 @@ mapFrameBufferLocked(
     if (vaddr == MAP_FAILED)
     {
         ALOGE("Error mapping the framebuffer (%s)", strerror(errno));
+        close(fd);
         return -errno;
     }
 
@@ -600,15 +579,19 @@ mapFrameBufferLocked(
 **
 **      Nothing.
 */
-static int
+extern int
 mapFrameBuffer(
     struct private_module_t* Module
     )
 {
-    log_func_entry;
+    //log_func_entry;
+    int err = 0;
     pthread_mutex_lock(&Module->lock);
 
-    int err = mapFrameBufferLocked(Module);
+    if( !Module->framebuffer )
+    {
+        err = mapFrameBufferLocked(Module);
+    }
 
     pthread_mutex_unlock(&Module->lock);
 
@@ -630,12 +613,12 @@ mapFrameBuffer(
 **
 **      Nothing.
 */
-static int
+extern int
 fb_close(
     struct hw_device_t * Dev
     )
 {
-    log_func_entry;
+    //log_func_entry;
     fb_context_t * ctx = (fb_context_t*) Dev;
 
     if (ctx != NULL)
@@ -665,14 +648,14 @@ fb_close(
 **      hw_device_t ** Device
 **          Framebuffer device handle.
 */
-int
+extern int
 fb_device_open(
     hw_module_t const * Module,
     const char * Name,
     hw_device_t ** Device
     )
 {
-    log_func_entry;
+    //log_func_entry;
     int status = -EINVAL;
 
     if (!strcmp(Name, GRALLOC_HARDWARE_FB0))
@@ -682,7 +665,7 @@ fb_device_open(
         /* Initialize our state here */
         fb_context_t * dev = (fb_context_t *) malloc(sizeof (*dev));
         if( dev == NULL )
-            return -EINVAL;
+            return -ENOMEM;
 
         memset(dev, 0, sizeof (*dev));
 
@@ -700,7 +683,7 @@ fb_device_open(
 
         if (status >= 0)
         {
-            int stride = m->finfo.line_length / (m->info.bits_per_pixel >> 3);
+            int stride = m->finfo.line_length / (m->info.bits_per_pixel / 8);
 
             const_cast<uint32_t&>(dev->device.flags)      = 0;
             const_cast<uint32_t&>(dev->device.width)      = m->info.xres;

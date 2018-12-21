@@ -32,7 +32,6 @@ LOCAL_SRC_FILES := \
     gc_gralloc_map.cpp \
 	gralloc.cpp
 
-
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
@@ -52,6 +51,7 @@ LOCAL_MODULE := gralloc.mrvl
 LOCAL_CFLAGS := \
 	-DLOG_TAG=\"v_gralloc\" \
 	-DDISABLE_FRONT_BUFFER \
+    -DANDROID_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DFRAMEBUFFER_PIXEL_FORMAT=$(FRAMEBUFFER_PIXEL_FORMAT)
 
 LOCAL_C_INCLUDES += hardware/marvell/pxa1908/original-kernel-headers device/samsung/pxa1908-common/mvmem

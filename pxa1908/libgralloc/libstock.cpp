@@ -4,6 +4,7 @@
 
 #include <hardware/hardware.h>
 #include <hardware/gralloc.h>
+#include <linux/fb.h>
 #include <cutils/log.h>
 
 struct gralloc_context_t
@@ -13,9 +14,10 @@ alloc_device_t device;
 
 libstock::libstock():_lib(dlopen("/system/lib/hw/gralloc.stock.so", RTLD_NOW)),gralloc_close(NULL), gralloc_alloc(NULL),gralloc_free(NULL)
 {
-    //dlsym(HMI, "HMI");
+    gralloc_context_t *dev;
+    framebuffer_device_t *fbdev;
 
-    *(int*)&HMI = (int)::dlsym(_lib, "HMI");
+    dlsym(HMI, "HMI");
 
     gralloc_device_open       = HMI->base.common.methods->open;
     gralloc_register_buffer   = HMI->base.registerBuffer;
@@ -27,6 +29,19 @@ libstock::libstock():_lib(dlopen("/system/lib/hw/gralloc.stock.so", RTLD_NOW)),g
 
     dlsym(fb_device_open, "_Z14fb_device_openPK11hw_module_tPKcPP11hw_device_t");
 
+    /*
+    private_module_t module;
+
+    module.framebuffer = (private_handle_t*)1;
+    fb_device_open((hw_module_t*)&module, GRALLOC_HARDWARE_FB0, (hw_device_t**)&fbdev);
+
+    fb_close = fbdev->common.close;
+    fb_post = fbdev->post;
+    fb_setSwapInterval = fbdev->setSwapInterval;
+
+    fb_close((hw_device_t*)fbdev);
+    */
+
     dlsym(gc_gralloc_alloc, "_Z16gc_gralloc_allocP14alloc_device_tiiiiPPK13native_handlePi");
     dlsym(gc_gralloc_wrap, "_Z15gc_gralloc_wrapP16private_handle_tiiiimPv");
     dlsym(gc_gralloc_lock_ycbcr, "_Z21gc_gralloc_lock_ycbcrPK16gralloc_module_tPK13native_handleiiiiiP13android_ycbcr");
@@ -34,7 +49,6 @@ libstock::libstock():_lib(dlopen("/system/lib/hw/gralloc.stock.so", RTLD_NOW)),g
 
     dlsym(gralloc_alloc_framebuffer, "_Z25gralloc_alloc_framebufferP14alloc_device_tiiiiPPK13native_handlePi");
 
-    gralloc_context_t *dev;
     gralloc_device_open(0, "gpu0", (hw_device_t**)&dev);
 
     gralloc_close = dev->device.common.close;
