@@ -1,7 +1,7 @@
-display-hals := libgralloc libGAL
+display-hals := libGAL libgralloc
 #display-hals := libgralloc libcopybit libvirtual
 #display-hals += libhwcomposer liboverlay libqdutils libexternal libqservice
-#display-hals += libmemtrack
+display-hals += libmemtrack
 #ifneq ($(TARGET_PROVIDES_LIBLIGHT),true)
 #display-hals += liblight
 #endif

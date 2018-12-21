@@ -354,11 +354,11 @@ gc_gralloc_alloc_buffer(
     )
 {
     log_func_entry;
-    gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
+
     gceSURF_FORMAT surfFormat = gcvSURF_UNKNOWN;
     gceSTATUS status;
     gctUINT32 pixelPipes;
-    int fd = open("/dev/null", 0, 0);
+    int fd;
     int masterFd;
     int buffFlags;
     int v15;
@@ -372,12 +372,13 @@ gc_gralloc_alloc_buffer(
     int v29;
     int v30;
     int v32;
+    int v33;
     int v34;
     int v35;
     int v36;
     int v42;
     int v62;
-    int v65;
+    gctUINT v65;
     int v68;
     int v69;
     int v70;
@@ -406,15 +407,13 @@ gc_gralloc_alloc_buffer(
 
     private_handle_t *hnd;
 
-    ALOGE("Not implemented gc_gralloc_alloc_buffer, returning EINVAL");
-    return -EINVAL;
+    ALOGE("Not implemented gc_gralloc_alloc, using stock function");
+    return libstock::Inst().gc_gralloc_alloc(Dev, Width, Height, Format, Usage, Handle, Stride);
 
+    fd = open("/dev/null", 0, 0);
     /* Binder info. */
     IPCThreadState* ipc               = IPCThreadState::self();
     callingPID = ipc->getCallingPid();
-
-    gcoHAL_GetHardwareType(0, &hwtype);
-    setHwType71D0(Usage);
 
     dirtyHeight = Height;
     dirtyWidth = Width;
@@ -423,122 +422,119 @@ gc_gralloc_alloc_buffer(
     {
         if( android_formats[i] == 0 )
         {
-            ALOGE("Unknown ANDROID format: %d", format);
-            break;
-        }
-        if( (gceSURF_FORMAT)android_formats[i+1] == gcvSURF_UNKNOWN )
-        {
-            ALOGE("Not supported ANDROID format: %d", format);
+            ALOGE("Unknown ANDROID format: %d", Format);
             break;
         }
 
-        if( format == android_formats[i] )
+        if( Format == android_formats[i] )
         {
+            if( (gceSURF_FORMAT)android_formats[i+1] == gcvSURF_UNKNOWN )
+            {
+                ALOGE("Not supported ANDROID format: %d", Format);
+                break;
+            }
             surfFormat = (gceSURF_FORMAT)android_formats[i+1];
             break;
         }
     }
 
-    if( surfFormat != gcvSURF_UNKNOWN )
+    if ( surfFormat != gcvSURF_UNKNOWN )
     {
-        status = gcoHAL_QueryPixelPipesInfo(&pixelPipes, 0, 0);
-        if( status != gcvSTATUS_OK )
+        if ( gcoHAL_QueryPixelPipesInfo(&pixelPipes, 0, 0) & 0x80000000 )
         {
-            surfFormat = gcvSURF_UNKNOWN;
+            hnd = 0;
             v15 = 0;
-LABEL_97:
             masterFd = -1;
             goto ON_ERROR;
         }
-
-        if( (Usage & (GRALLOC_USAGE_HW_VIDEO_ENCODER|GRALLOC_USAGE_HW_RENDER)) != GRALLOC_USAGE_HW_RENDER )
+        if ( (Usage & 0x10200) != GRALLOC_USAGE_HW_RENDER )
         {
-            if( Usage & GRALLOC_USAGE_HW_VIDEO_ENCODER  )
+            if ( Usage & GRALLOC_USAGE_HW_VIDEO_ENCODER )
                 buffFlags = private_handle_t::PRIV_FLAGS_USES_PMEM_ADSP|private_handle_t::PRIV_FLAGS_USES_PMEM;
             else
                 buffFlags = private_handle_t::PRIV_FLAGS_USES_PMEM;
 
-            v21 = dirtyWidth + 15;
-            v22 = (4 * pixelPipes - 1 + dirtyHeight) & ~3 * pixelPipes;
-            v91 = 8;
+            v22 = (4 * pixelPipes - 1 + dirtyHeight) & 0xFFFFFFFC * pixelPipes;
             dirtyWidthAligned16 = _ALIGN(dirtyWidth, 16);
+            // Bit 4
             v24 = (Usage >> 2) & 1;
-            if( Format != HAL_PIXEL_FORMAT_YCrCb_420_SP )
+            Pool = gcvPOOL_USER;
+            if ( Format != HAL_PIXEL_FORMAT_YCrCb_420_SP )
             {
-                if( Format <= HAL_PIXEL_FORMAT_YCrCb_420_SP )
+                if ( Format <= HAL_PIXEL_FORMAT_YCrCb_420_SP )
                 {
-                    if( Format == HAL_PIXEL_FORMAT_RGB_888 )
+                    if ( Format == HAL_PIXEL_FORMAT_RGB_888 )
                     {
-                        v28 = v21 & ~0xF;
+                        v28 = dirtyWidthAligned16;
                         v29 = _ALIGN(v22, 4);
-                        // 3bytes, 1R, 1G, 1B
-                        lineSize = 3 * _ALIGN(dirtyWidth, 16);
-                        v30 = v29 * lineSize;
-                        goto LABEL_71;
+                        lineSize = 3 * dirtyWidthAligned16;
+                        goto LABEL_70;
                     }
-                    if( Format > HAL_PIXEL_FORMAT_RGB_888 )
+                    if ( Format > HAL_PIXEL_FORMAT_RGB_888 )
                     {
-                        if( Format != HAL_PIXEL_FORMAT_BGRA_8888 )
+                        if ( Format != HAL_PIXEL_FORMAT_BGRA_8888 )
                         {
-                            if( Format < HAL_PIXEL_FORMAT_BGRA_8888 )// HAL_PIXEL_FORMAT_RGB_565
+                            if ( Format == HAL_PIXEL_FORMAT_RGB_565 )
                             {
-                                v28 = v21 & ~0xF;
+                                v28 = dirtyWidthAligned16;
                                 v29 = _ALIGN(v22, 4);
                             }
                             else
                             {
-                                if( Format != HAL_PIXEL_FORMAT_YCbCr_422_SP )
+                                if ( Format != HAL_PIXEL_FORMAT_YCbCr_422_SP )
                                     goto LABEL_96;
-                                v21 = v22 + 63;
-                                v28 = _ALIGN(dirtyWidthAligned16, 64);
+                                v28 = (dirtyWidthAligned16 + 0x3F) & ~0x3Fu;
                                 v29 = _ALIGN(v22, 64);
-                                if( v24 )
+                                if ( v24 )
                                 {
                                     v30 = 2 * v28 * v29;
                                     goto LABEL_71;
                                 }
                             }
                             lineSize = 2 * v28;
-                            v30 = v29 * lineSize;
-                            goto LABEL_71;
+                            goto LABEL_70;
                         }
                     }
-                    else if( Format < HAL_PIXEL_FORMAT_RGBA_8888 )
+                    else if ( Format < 1 )
                     {
-                        goto LABEL_96;
+                        hnd = 0;
+                        v15 = 1;
+                        masterFd = -1;
+                        goto ON_ERROR;
                     }
 LABEL_66:
-                    v28 = v21 & ~0xF;
+                    v28 = dirtyWidthAligned16;
                     v29 = _ALIGN(v22, 4);
                     lineSize = 4 * dirtyWidthAligned16;
+LABEL_70:
                     v30 = v29 * lineSize;
                     goto LABEL_71;
                 }
-                if( Format == HAL_PIXEL_FORMAT_CbYCrY_422_I )
+                if ( Format == HAL_PIXEL_FORMAT_CbYCrY_422_I )
                 {
 LABEL_64:
                     v29 = _ALIGN(v22, 32);
                     v28 = dirtyWidthAligned16;
                     v30 = v29 * 2 * dirtyWidthAligned16;
-                    if( v24 )
+                    if ( v24 )
                         v30 = _ALIGN(v30, 4096);
 LABEL_71:
                     v81 = _ALIGN(v30, 4096);
-                    v32 = v81 + 4095;
-                    if( (Usage & GRALLOC_USAGE_PRIVATE_3) )
+                    v33 = errno;
+                    if ( (Usage & 0x80000000) != 0 )
                     {
-                        masterFd = mvmem_alloc(v32 & ~4095, 0x30001, 0x1000);
-                        if( masterFd >= 0 )
+                        masterFd = mvmem_alloc(_ALIGN(81, 4096), 0x30001, 0x1000);
+                        if ( masterFd >= 0 )
                         {
                             v35 = 1;
                             goto LABEL_78;
                         }
                         ALOGW("WARNING: continuous ion memory alloc failed. Try to alloc non-continuous ion memory.");
                     }
-                    masterFd = mvmem_alloc(v32 & ~4095, 0x30002, 0x1000);
-                    if( masterFd < 0 )
+                    masterFd = mvmem_alloc(_ALIGN(81, 4096), 0x30002, 0x1000);
+                    if ( masterFd < 0 )
                     {
-                        v34 = -errno;
+                        v34 = -v33;
 LABEL_82:
                         ALOGE("Failed to allocate memory from ION");
                         masterFd = v34;
@@ -547,10 +543,10 @@ LABEL_82:
                     v35 = 0;
 LABEL_78:
                     mvmem_set_name(masterFd, "gralloc");
-                    if( v35 )
+                    if ( v35 )
                     {
                         v34 = mvmem_get_phys(masterFd, &v101);
-                        if( v34 < 0 )
+                        if ( v34 < 0 )
                         {
                             mvmem_free(masterFd);
                             goto LABEL_82;
@@ -562,85 +558,84 @@ LABEL_78:
                     }
 LABEL_83:
                     v36 = 0x2000006;
-                    if( !v24 )
+                    if ( !v24 )
                         v36 = 6;
-                    status = gcoSURF_Construct(0, dirtyWidthAligned16, v22, 1, (gceSURF_TYPE)v36, surfFormat, gcvPOOL_SYSTEM, &surface);
-                    if( status != gcvSTATUS_OK )
+                    if ( gcoSURF_Construct(0, dirtyWidthAligned16, v22, 1, (gceSURF_TYPE)v36, surfFormat, gcvPOOL_USER, &surface) < 0 )
                     {
-LABEL_89:
-                        hnd = 0;
+                        hnd = NULL;
                         v15 = 1;
                         goto ON_ERROR;
                     }
-                    status = gcoSURF_GetAlignedSize(surface, &alignedWidth, &alignedHeight, 0);
-                    if( status != gcvSTATUS_OK )
+                    if ( gcoSURF_GetAlignedSize(surface, &alignedWidth, &alignedHeight, 0) < 0 )
                     {
-                        goto LABEL_89;
+                        hnd = NULL;
+                        v15 = 1;
+                        goto ON_ERROR;
                     }
-                    status = gcoSURF_QueryVidMemNode(surface, &Node, &Pool, &Bytes);
-                    if( status != gcvSTATUS_OK )
+                    if ( gcoSURF_QueryVidMemNode(surface, &Node, &Pool, &Bytes) < 0 )
                     {
-                        goto LABEL_89;
+                        hnd = NULL;
+                        v15 = 1;
+                        goto ON_ERROR;
                     }
-                    if( dirtyWidthAligned16 != dirtyWidth || v22 != dirtyHeight )
+                    if ( dirtyWidthAligned16 != dirtyWidth || v22 != dirtyHeight )
                     {
-                        status = gcoSURF_SetRect(surface, dirtyWidth, dirtyHeight);
-                        if( status != gcvSTATUS_OK )
+                        if ( gcoSURF_SetRect(surface, dirtyWidth, dirtyHeight) < 0 )
                         {
-                            goto LABEL_89;
+                            hnd = NULL;
+                            v15 = 1;
+                            goto ON_ERROR;
                         }
                     }
                     dirtyHeight = v22;
                     v25 = 0;
                     dirtyWidth = _ALIGN(dirtyWidth, 16);
                     v15 = 1;
-                    v26 = 6;
+                    v26 = gcvSURF_BITMAP;
 LABEL_151:
-                    status = gcoSURF_AllocShBuffer(surface, &shAddr);
-                    if( status != gcvSTATUS_OK )
+                    if ( gcoSURF_AllocShBuffer(surface, &shAddr) < 0 )
                     {
                         hnd = 0;
                         goto ON_ERROR;
                     }
-                    hnd = new private_handle_t(fd, v89 * dirtyHeight, buffFlags);
+                    hnd = new private_handle_t(fd, v65 * dirtyHeight, buffFlags);
+
                     hnd->format = Format;
                     hnd->surfType = (gceSURF_TYPE)v26;
                     hnd->samples = v25;
-                    hnd->dirtyWidth = dirtyWidth;
                     hnd->dirtyHeight = dirtyHeight;
+                    hnd->dirtyWidth = dirtyWidth;
                     hnd->surface = surface;
                     hnd->surfaceHigh32Bits = 0;
-                    hnd->surfFormat = (gceSURF_FORMAT)v62;
+                    hnd->surfFormat = surfFormat;
                     hnd->size = surface->totalSize[22];
                     hnd->clientPID = callingPID;
                     hnd->allocUsage = Usage;
                     hnd->signal = 0;
                     hnd->signalHigh32Bits = 0;
                     hnd->lockUsage = 0;
+                    hnd->shAddr = shAddr;
                     hnd->master = masterFd;
-                    if( v15 )
+                    if ( v15 )
                     {
                         hnd->lockAddr = v101;
                         hnd->pool = (gcePOOL)surface->totalSize[27];
                         hnd->infoB2 = surface->totalSize[39];
                         hnd->infoA2 = surface->totalSize[90];
-                        hnd->infoB3 = surface->totalSize[102];
-                        hnd->field_34 = v28;
                         hnd->field_38 = v29;
-                        hnd->size = v81;
                         v65 = alignedWidth;
+                        hnd->infoB3 = surface->totalSize[102];
+                        hnd->size = v81;
+                        hnd->field_34 = v28;
                         v42 = _MapBuffer((gralloc_module_t*)Dev, hnd, &Vaddr);
-                        if( v42 < 0 )
+                        if ( v42 < 0 )
                         {
                             ALOGE("gc_gralloc_map memory error");
-LABEL_162:
                             fd = -1;
                             goto ON_ERROR;
                         }
-                        status = gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1);
-                        if( status != gcvSTATUS_OK )
+                        if ( gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1) < 0 )
                         {
-LABEL_169:
                             fd = -1;
                             goto ON_ERROR;
                         }
@@ -657,199 +652,187 @@ LABEL_169:
                         hnd->infoB2 = surface->totalSize[39];
                         v70 = surface->totalSize[104];
                         v94 = v70;
-                        if( v70 )
+                        if ( v70 )
                             gcoHAL_NameVideoMemory(v70, &v94);
                         hnd->infoB1 = v94;
                         hnd->infoA2 = surface->totalSize[90];
                         hnd->infoB3 = surface->totalSize[102];
-                        status = gcoSURF_GetAlignedSize(surface, &alignedWidth2, &alignedHeight2, 0);
-                        if( status != gcvSTATUS_OK )
+                        if ( gcoSURF_GetAlignedSize(surface, &alignedWidth2, &alignedHeight2, 0) < 0 )
                         {
-                            goto LABEL_162;
+                            fd = -1;
+                            goto ON_ERROR;
                         }
                         hnd->field_34 = alignedWidth2;
                         hnd->field_38 = alignedHeight2;
-                        v42 = _MapBuffer((gralloc_module_t*)Dev, hnd, &Vaddr);
+                        v42 = _MapBuffer((gralloc_module_t*)Dev, (private_handle_t*)Handle, &Vaddr);
                     }
-                    if( v42 == 0 )
+                    if ( !v42 )
                     {
                         v76 = Vaddr;
                         *Handle = (buffer_handle_t)hnd;
                         *Stride = v65;
-                        if( v76 && (Usage & GRALLOC_USAGE_HW_RENDER) == 0 )
+                        if ( v76 && !(Usage & GRALLOC_USAGE_HW_RENDER) )
                             memset(v76, 0, hnd->size);
-                        goto LABEL_109;
+                        return v42;
                     }
-                    status = (gceSTATUS)-13;
-                    goto LABEL_169;
+                    fd = -1;
+                    goto ON_ERROR;
                 }
-                if( Format <= HAL_PIXEL_FORMAT_CbYCrY_422_I )
+                if ( Format <= HAL_PIXEL_FORMAT_CbYCrY_422_I )
                 {
-                    if( Format != HAL_PIXEL_FORMAT_YCbCr_420_P )
+                    if ( Format != HAL_PIXEL_FORMAT_YCbCr_420_P )
                     {
-                        if( Format != HAL_PIXEL_FORMAT_YCbCr_422_I )
+                        if ( Format != HAL_PIXEL_FORMAT_YCbCr_422_I )
                             goto LABEL_96;
                         goto LABEL_64;
                     }
                     goto LABEL_61;
                 }
-                if( Format != HAL_PIXEL_FORMAT_YCbCr_420_SP_MRVL )
+                if ( Format != HAL_PIXEL_FORMAT_YCbCr_420_SP_MRVL )
                 {
-                    if( Format != HAL_PIXEL_FORMAT_YV12 )
+                    if ( Format != HAL_PIXEL_FORMAT_YV12 )
                     {
-                        if( Format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED )
+                        if ( Format != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED )
                         {
 LABEL_96:
                             hnd = 0;
                             v15 = 1;
-                            goto LABEL_97;
+                            masterFd = -1;
+                            goto ON_ERROR;
                         }
                         goto LABEL_66;
                     }
 LABEL_61:
-                        v28 = _ALIGN(dirtyWidthAligned16, 64);
-                        v29 = _ALIGN(v22, 64);
-                        if( v24 )
-                        {
-                            v30 = _ALIGN((v28*v29)/2,4096) + v28*v29;
-                            goto LABEL_71;
-                        }
-LABEL_63:
-                        v30 = (v29 * v28 * 3) / 2;
+                    v28 = _ALIGN(dirtyWidthAligned16, 64);
+                    v29 = _ALIGN(v22, 64);
+                    if ( v24 )
+                    {
+                        v30 = _ALIGN( ((unsigned int)(v28 * v29) >> 2), 4096);
+                        v30 = v28 * v29 + 2 * v30;
                         goto LABEL_71;
+                    }
+                    v30 = (unsigned int)(v29 * 3 * v28) >> 1;
+                    goto LABEL_71;
                 }
-                v25 = Usage;
-                if( (Usage & GRALLOC_USAGE_SW_WRITE_OFTEN) == GRALLOC_USAGE_SW_WRITE_OFTEN
-                 || (Usage & GRALLOC_USAGE_SW_READ_OFTEN) == GRALLOC_USAGE_SW_READ_OFTEN )
-                {
-                    v25 = 0;
-                    Pool = gcvPOOL_CONTIGUOUS;
-                    v26 = 1030;
-                    goto LABEL_111;
-                }
-                goto LABEL_44;
             }
-            v27 = Usage & (GRALLOC_USAGE_RENDERSCRIPT|GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_MRVL_PRIVATE_1);
-            if( v27 == GRALLOC_USAGE_RENDERSCRIPT )
+            v28 = _ALIGN(dirtyWidthAligned16, 64);
+            v29 = _ALIGN(v22, 64);
+            if ( v24 )
             {
-                Pool = gcvPOOL_DEFAULT;
-LABEL_47:
-                v26 = 4;
+                v30 = _ALIGN( ((unsigned int)(v28 * v29) >> 1), 4096);
+                v30 = v30 + v28 * v29;
+                goto LABEL_71;
+            }
+            v30 = (unsigned int)(v29 * 3 * v28) >> 1;
+            goto LABEL_71;
+        }
+        v25 = Usage;
+        if ( Usage )
+        {
+            if ( (Usage & GRALLOC_USAGE_SW_WRITE_OFTEN) == GRALLOC_USAGE_SW_WRITE_OFTEN
+              || (Usage & GRALLOC_USAGE_SW_READ_OFTEN) == GRALLOC_USAGE_SW_READ_OFTEN )
+            {
+                v25 = 0;
+                Pool = gcvPOOL_CONTIGUOUS;
+                v26 = gcvSURF_CACHEABLE_BITMAP;
                 goto LABEL_111;
             }
-            switch( v27 )
-            {
-                case GRALLOC_USAGE_FOREIGN_BUFFERS:
-                    Pool = gcvPOOL_DEFAULT;
-                    v26 = 260;
-                    break;
-                case GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_RENDERSCRIPT:
-                    Pool = gcvPOOL_DEFAULT;
-                    v26 = 0x40004;
-                    break;
-                case GRALLOC_USAGE_MRVL_PRIVATE_1:
-                    Pool = gcvPOOL_DEFAULT;
-                    v25 = 4;
-                    goto LABEL_47;
-                default:
-                    if( v27 != (GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_MRVL_PRIVATE_1)
-                     && (v27 == (GRALLOC_USAGE_MRVL_PRIVATE_1|GRALLOC_USAGE_FOREIGN_BUFFERS)
-                         || Usage & (GRALLOC_USAGE_HW_COMPOSER|GRALLOC_USAGE_HW_RENDER)
-                         || !(Usage & GRALLOC_USAGE_HW_TEXTURE)
-                        )
-                      )
-                    {
- LABEL_44:
-                        v25 = 0;
-                        Pool = gcvPOOL_DEFAULT;
-                        v26 = 6;
-                        break;
-                    }
+            goto LABEL_44;
+        }
+        v27 = Usage & 0x700000;
+        if ( (Usage & 0x700000) == GRALLOC_USAGE_RENDERSCRIPT )
+        {
+            Pool = gcvPOOL_DEFAULT;
+            v26 = gcvSURF_RENDER_TARGET;
+            goto LABEL_111;
+        }
+        switch ( v27 )
+        {
+            case GRALLOC_USAGE_FOREIGN_BUFFERS:
+                Pool = gcvPOOL_DEFAULT;
+                v26 = gcvSURF_RENDER_TARGET_NO_TILE_STATUS;
+                break;
+            case GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_RENDERSCRIPT:
+                Pool = gcvPOOL_DEFAULT;
+                v26 = 0x40004;
+                break;
+            case GRALLOC_USAGE_MRVL_PRIVATE_1:
+                Pool = gcvPOOL_DEFAULT;
+                v25 = 4;
+                v26 = gcvSURF_RENDER_TARGET;
+                goto LABEL_111;
+            default:
+                if ( v27 != 0x500000 && (v27 == 0x600000 || Usage & 2560 || !(Usage & GRALLOC_USAGE_HW_TEXTURE)) )
+                {
+LABEL_44:
                     v25 = 0;
                     Pool = gcvPOOL_DEFAULT;
-                    v26 = 3;
+                    v26 = gcvSURF_BITMAP;
                     break;
-            }
+                }
+                v25 = 0;
+                Pool = gcvPOOL_DEFAULT;
+                v26 = gcvSURF_TEXTURE;
+                break;
+        }
 LABEL_111:
-            masterFd = open("/dev/null", 0, 0);
-            if( v26 == 4 )
+        masterFd = open("/dev/null", 0, 0);
+        if ( v26 == gcvSURF_RENDER_TARGET )
+        {
+            switch( surfFormat )
             {
-                if( surfFormat != gcvSURF_A8R8G8B8 )
-                {
-                    if ( surfFormat > gcvSURF_A8R8G8B8 )
+                case gcvSURF_R5G5B5A1: surfFormat = gcvSURF_A1R5G5B5; break;
+                case gcvSURF_R4G4B4A4: surfFormat = gcvSURF_A4R4G4B4; break;
+                case gcvSURF_X8B8G8R8: surfFormat = gcvSURF_X8R8G8B8; break;
+                case gcvSURF_R5G6B5: break;
+                default:
+                    if( surfFormat > gcvSURF_A8B8G8R8 )
                     {
-                        if ( surfFormat != gcvSURF_A8B8G8R8 )
+                        if ( (unsigned int)(surfFormat - gcvSURF_YUY2) <= 7 )
                         {
-                            if ( surfFormat > gcvSURF_A8B8G8R8 )
-                            {
-                                if ( (unsigned int)(surfFormat - gcvSURF_YUY2) <= 7 )
-                                {
-                                    surfFormat = gcvSURF_YUY2;
-                                    goto LABEL_130;
-                                }
-                            }
-                            else if ( surfFormat == gcvSURF_X8B8G8R8 )
-                            {
-                                surfFormat = gcvSURF_X8R8G8B8;
-                                goto LABEL_130;
-                            }
+                            surfFormat = gcvSURF_YUY2;
+                            break;
                         }
                     }
-                    else
-                    {
-                        switch( surfFormat )
-                        {
-                            case gcvSURF_R5G5B5A1:
-                                surfFormat = gcvSURF_A1R5G5B5;
-                                goto LABEL_130;
+            }
+        }
+        else if ( v26 == gcvSURF_TEXTURE )
+        {
+            if ( gcoTEXTURE_GetClosestFormat(0, surfFormat, &surfFormat) < 0 )
+            {
+                hnd = 0;
+                v15 = 0;
+                goto ON_ERROR;
+            }
+        }
+        if ( ((Usage << 17) & 0x80000000) != 0 )
+            v26 |= 0x8000u;
 
-                            case gcvSURF_R5G6B5:
-                                goto LABEL_130;
-
-                            case gcvSURF_R4G4B4A4:
-                                surfFormat = gcvSURF_A4R4G4B4;
-                                goto LABEL_130;
-                        }
-                    }
-                }
-                surfFormat = gcvSURF_A8R8G8B8;
-            }
-            else if( v26 == 3 )
+        if ( gcoSURF_Construct(0, dirtyWidth, dirtyHeight, 1, (gceSURF_TYPE)v26, surfFormat, Pool, &surface) >= 0 ||
+            Pool == gcvPOOL_CONTIGUOUS && (Pool = gcvPOOL_VIRTUAL, gcoSURF_Construct(0, dirtyWidth, dirtyHeight, 1, (gceSURF_TYPE)v26, surfFormat, gcvPOOL_VIRTUAL, &surface) >= 0 ) )
+        {
+            if ( (Usage & 0x700000) == 0x600000 )
             {
-                status = gcoTEXTURE_GetClosestFormat(0, surfFormat, &surfFormat);
-                if( status != gcvSTATUS_OK )
+                if ( gcoSURF_Unlock(surface, 0) < 0 )
                 {
-                    goto LABEL_149;
+                    hnd = 0;
+                    v15 = 0;
+                    goto ON_ERROR;
                 }
-            }
-LABEL_130:
-            if( Usage & GRALLOC_USAGE_PROTECTED )
-            {
-                v26 |= 0x8000;
-            }
-            status = gcoSURF_Construct(0, dirtyWidth, dirtyHeight, 1, (gceSURF_TYPE)v26, surfFormat, Pool, &surface);
-            if( status >= 0 || Pool == gcvPOOL_CONTIGUOUS
-               && (Pool = gcvPOOL_VIRTUAL, gcoSURF_Construct(0, dirtyWidth, dirtyHeight, 1, (gceSURF_TYPE)v26, surfFormat, Pool, &surface)) >= 0 )
-            {
-                if( (Usage & (GRALLOC_USAGE_RENDERSCRIPT|GRALLOC_USAGE_FOREIGN_BUFFERS|GRALLOC_USAGE_MRVL_PRIVATE_1)) == (GRALLOC_USAGE_MRVL_PRIVATE_1|GRALLOC_USAGE_FOREIGN_BUFFERS) )
+                setHwType71D0(0);
+                if ( gcoSURF_Lock(surface, 0, 0) < 0 )
                 {
-                    status = gcoSURF_Unlock(surface, 0);
-                    if( status != gcvSTATUS_OK )
-                    {
-                        goto LABEL_149;
-                    }
-                    setHwType71D0(0);
-                    status = gcoSURF_Lock(surface, 0, 0);
-                    if( status != gcvSTATUS_OK )
-                    {
-                        goto LABEL_149;
-                    }
-                    setHwType71D0(Usage);
+                    hnd = 0;
+                    v15 = 0;
+                    goto ON_ERROR;
                 }
-                if( v25 <= 1 || gcoSURF_SetSamples(surface, 4) >= 0 )
+                setHwType71D0(Usage);
+            }
+            if ( v25 <= 1 || gcoSURF_SetSamples(surface, 4) >= 0 )
+            {
+                if ( gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, 1) >= 0 )
                 {
-                    status = gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, gcvTRUE);
-                    if( status != gcvSTATUS_OK )
+                    if ( gcoSURF_GetAlignedSize(surface, &v65, 0, 0) >= 0 )
                     {
                         v28 = 0;
                         v29 = 0;
@@ -862,40 +845,36 @@ LABEL_130:
                 }
             }
         }
-LABEL_149:
+        else
+        {
+            ALOGE("Failed to construct surface");
+        }
         hnd = 0;
         v15 = 0;
         goto ON_ERROR;
     }
-
     v15 = 0;
     ALOGE("error: HAL_PIXEL_FORMAT %x\n", Format);
-    status = (gceSTATUS)-13;
     masterFd = -1;
-
 ON_ERROR:
-    if( surface )
+    if ( surface )
         gcoSURF_Destroy(surface);
 
-    if( hnd )
+    if ( hnd )
+    {
         delete hnd;
-
-    if( fd > 0 )
+    }
+    if ( fd > 0 )
         close(fd);
 
-    if( masterFd > 0 )
+    if ( masterFd >= 0 )
     {
-        if( v15 )
+        if ( v15 )
             mvmem_free(masterFd);
         else
             close(masterFd);
     }
-
     v42 = -EINVAL;
-
-LABEL_109:
-    gcoHAL_SetHardwareType(0, hwtype);
-
     return v42;
 }
 
@@ -942,17 +921,22 @@ gc_gralloc_alloc(
 {
     //log_func_entry;
 
-    int err = -EINVAL;
+    int ret;
+    gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
 
     if (!Handle || !Stride)
     {
         return -EINVAL;
     }
 
-    ALOGE("Not implemented gc_gralloc_alloc, using stock function");
-    err = libstock::Inst().gc_gralloc_alloc(Dev, Width, Height, Format, Usage, Handle, Stride);
+    gcoHAL_GetHardwareType(0, &hwtype);
+    setHwType71D0(Usage);
 
-    return err;
+    ret = gc_gralloc_alloc_buffer(Dev, Width, Height, Format, Usage, Handle, Stride);
+
+    gcoHAL_SetHardwareType(0, hwtype);
+
+    return ret;
 }
 
 
