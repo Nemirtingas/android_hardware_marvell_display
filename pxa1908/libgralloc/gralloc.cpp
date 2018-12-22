@@ -42,38 +42,38 @@ extern int format;
 extern int fb_device_open(const hw_module_t* module, const char* name,
     hw_device_t** device);
 
-extern int gralloc_alloc_framebuffer(alloc_device_t * Dev, int Width, int Height,
+static int gralloc_alloc_framebuffer(alloc_device_t * Dev, int Width, int Height,
     int Format, int Usage, buffer_handle_t * Handle, int * Stride);
 
-extern int gralloc_free_framebuffer(alloc_device_t * Dev, buffer_handle_t handle);
+static int gralloc_free_framebuffer(alloc_device_t * Dev, buffer_handle_t handle);
 
-extern int gralloc_device_open(const hw_module_t* module, const char* name,
+static int gralloc_device_open(const hw_module_t* module, const char* name,
     hw_device_t** device);
 
-extern int gralloc_register_buffer(gralloc_module_t const* module,
+static int gralloc_register_buffer(gralloc_module_t const* module,
     buffer_handle_t handle);
 
-extern int gralloc_unregister_buffer(gralloc_module_t const* module,
+static int gralloc_unregister_buffer(gralloc_module_t const* module,
     buffer_handle_t handle);
 
-extern int gralloc_lock(gralloc_module_t const* module,
+static int gralloc_lock(gralloc_module_t const* module,
     buffer_handle_t handle, int usage,
     int l, int t, int w, int h,
     void** vaddr);
 
-extern int gralloc_lock_ycbcr(gralloc_module_t const* module, buffer_handle_t handle,
+static int gralloc_lock_ycbcr(gralloc_module_t const* module, buffer_handle_t handle,
     int usage, int l, int t, int w, int h, android_ycbcr *ycbcr );
 
-extern int gralloc_unlock(gralloc_module_t const* module,
+static int gralloc_unlock(gralloc_module_t const* module,
     buffer_handle_t handle);
 
-extern int gralloc_perform(struct gralloc_module_t const* module,
+static int gralloc_perform(struct gralloc_module_t const* module,
     int operation, ... );
 
 
 /*****************************************************************************/
 
-extern struct hw_module_methods_t gralloc_module_methods =
+static struct hw_module_methods_t gralloc_module_methods =
 {
     open: gralloc_device_open
 };
@@ -112,7 +112,7 @@ struct private_module_t HAL_MODULE_INFO_SYM =
 
 /*****************************************************************************/
 
-extern int gralloc_alloc(struct alloc_device_t* dev,
+static int gralloc_alloc(struct alloc_device_t* dev,
     int w, int h, int format, int usage,
     buffer_handle_t* handle, int* stride)
 {
@@ -129,7 +129,7 @@ extern int gralloc_alloc(struct alloc_device_t* dev,
     return gc_gralloc_alloc(dev, w, h, format, usage, handle, stride);
 }
 
-extern int gralloc_free(struct alloc_device_t* dev,
+static int gralloc_free(struct alloc_device_t* dev,
     buffer_handle_t handle)
 
 {
@@ -143,7 +143,7 @@ extern int gralloc_free(struct alloc_device_t* dev,
     return gc_gralloc_free(dev, handle);
 }
 
-extern int gralloc_close(struct hw_device_t * dev)
+static int gralloc_close(struct hw_device_t * dev)
 {
     //log_func_entry;
 
@@ -152,7 +152,7 @@ extern int gralloc_close(struct hw_device_t * dev)
     return 0;
 }
 
-extern int gralloc_device_open(const hw_module_t* module, const char* name,
+static int gralloc_device_open(const hw_module_t* module, const char* name,
         hw_device_t** device)
 {
     //log_func_entry;
@@ -193,7 +193,7 @@ extern int gralloc_device_open(const hw_module_t* module, const char* name,
 
 /*****************************************************************************/
 
-extern int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, int usage, buffer_handle_t* pHandle, int *pStride)
+static int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int format, int usage, buffer_handle_t* pHandle, int *pStride)
 {
     //log_func_entry;
 
@@ -275,7 +275,7 @@ extern int gralloc_alloc_framebuffer(alloc_device_t *device, int w, int h, int f
     return 0;
 }
 
-extern int gralloc_free_framebuffer(alloc_device_t *device, buffer_handle_t handle)
+static int gralloc_free_framebuffer(alloc_device_t *device, buffer_handle_t handle)
 {
     //log_func_entry;
 
@@ -295,7 +295,7 @@ extern int gralloc_free_framebuffer(alloc_device_t *device, buffer_handle_t hand
     return 0;
 }
 
-extern int gralloc_register_buffer(gralloc_module_t const* module,
+static int gralloc_register_buffer(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
     //log_func_entry;
@@ -308,7 +308,7 @@ extern int gralloc_register_buffer(gralloc_module_t const* module,
 
 }
 
-extern int gralloc_unregister_buffer(gralloc_module_t const* module,
+static int gralloc_unregister_buffer(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
     //log_func_entry;
@@ -320,7 +320,7 @@ extern int gralloc_unregister_buffer(gralloc_module_t const* module,
     return gc_gralloc_unregister_buffer(module, handle);
 }
 
-extern int gralloc_lock(gralloc_module_t const* module,
+static int gralloc_lock(gralloc_module_t const* module,
         buffer_handle_t handle, int usage,
         int l, int t, int w, int h,
         void** vaddr)
@@ -337,7 +337,7 @@ extern int gralloc_lock(gralloc_module_t const* module,
     return 0;
 }
 
-extern int gralloc_unlock(gralloc_module_t const* module,
+static int gralloc_unlock(gralloc_module_t const* module,
         buffer_handle_t handle)
 {
     //log_func_entry;
@@ -351,14 +351,14 @@ extern int gralloc_unlock(gralloc_module_t const* module,
 }
 
 // https://android.googlesource.com/platform/system/core/+/master/libsystem/include/system/graphics.h for struct android_ycbcr*
-extern int gralloc_lock_ycbcr(gralloc_module_t const* module, buffer_handle_t handle, int usage, int l, int t, int w, int h, android_ycbcr *ycbcr )
+static int gralloc_lock_ycbcr(gralloc_module_t const* module, buffer_handle_t handle, int usage, int l, int t, int w, int h, android_ycbcr *ycbcr )
 {
     //log_func_entry;
 
     return gc_gralloc_lock_ycbcr(module, handle, usage, l, t, w, h, ycbcr);
 }
 
-extern int gralloc_perform(struct gralloc_module_t const* module,
+static int gralloc_perform(struct gralloc_module_t const* module,
         int operation, ... )
 {
     //log_func_entry;

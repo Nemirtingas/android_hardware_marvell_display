@@ -87,7 +87,7 @@
 
 
 /* Framebuffer pixel format table. */
-extern const struct
+static const struct
 {
     int      format;
     uint32_t bits_per_pixel;
@@ -138,7 +138,7 @@ struct fb_context_t
 **
 **      Nothing.
 */
-extern int
+static int
 fb_setSwapInterval(
     struct framebuffer_device_t * Dev,
     int Interval
@@ -174,7 +174,7 @@ fb_setSwapInterval(
 **
 **      Nothing.
 */
-extern int
+static int
 fb_post(
     struct framebuffer_device_t * Dev,
     buffer_handle_t Buffer
@@ -309,7 +309,7 @@ fb_post(
 **
 **      Nothing.
 */
-extern int
+int
 mapFrameBufferLocked(
     struct private_module_t * Module
     )
@@ -579,7 +579,7 @@ mapFrameBufferLocked(
 **
 **      Nothing.
 */
-extern int
+static int
 mapFrameBuffer(
     struct private_module_t* Module
     )
@@ -613,7 +613,7 @@ mapFrameBuffer(
 **
 **      Nothing.
 */
-extern int
+static int
 fb_close(
     struct hw_device_t * Dev
     )
@@ -648,7 +648,7 @@ fb_close(
 **      hw_device_t ** Device
 **          Framebuffer device handle.
 */
-extern int
+int
 fb_device_open(
     hw_module_t const * Module,
     const char * Name,

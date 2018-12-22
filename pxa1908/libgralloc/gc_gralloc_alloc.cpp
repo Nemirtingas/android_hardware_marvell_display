@@ -98,7 +98,7 @@ extern "C" int android_formats[] =
 **      gceSURF_FORMAT HalFormat
 **          Pointer to hold hal pixel format.
 */
-extern gceSTATUS
+gceSTATUS
 _ConvertAndroid2HALFormat(
     int Format,
     gceSURF_FORMAT * HalFormat
@@ -177,7 +177,7 @@ _ConvertAndroid2HALFormat(
     return status;
 }
 
-extern int _ConvertFormatToSurfaceInfo(
+int _ConvertFormatToSurfaceInfo(
     int Format,
     int Width,
     int Height,
@@ -280,7 +280,7 @@ extern int _ConvertFormatToSurfaceInfo(
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-extern int
+int
 _MapBuffer(
     gralloc_module_t const * Module,
     private_handle_t * Handle,
@@ -342,7 +342,7 @@ _MapBuffer(
 **      int * Stride
 **          Pointer to hold buffer stride.
 */
-extern int
+static int
 gc_gralloc_alloc_buffer(
     alloc_device_t * Dev,
     int Width,
@@ -909,7 +909,7 @@ ON_ERROR:
 **      int * Stride
 **          Pointer to hold buffer stride.
 */
-extern int
+int
 gc_gralloc_alloc(
     alloc_device_t * Dev,
     int Width,
@@ -940,7 +940,7 @@ gc_gralloc_alloc(
 }
 
 
-extern int setHwType71D0(int AllocUsage)
+int setHwType71D0(int AllocUsage)
 {
     //log_func_entry;
     static gceHARDWARE_TYPE hwtype = gcvHARDWARE_INVALID;
@@ -999,7 +999,7 @@ extern int setHwType71D0(int AllocUsage)
 **
 **      Nothing.
 */
-extern int
+int
 gc_gralloc_free(
     alloc_device_t * Dev,
     buffer_handle_t Handle
@@ -1058,7 +1058,7 @@ gc_gralloc_free(
     return 0;
 }
 
-extern int gc_gralloc_notify_change(buffer_handle_t Handle)
+int gc_gralloc_notify_change(buffer_handle_t Handle)
 {
     //log_func_entry;
     private_handle_t *hnd = (private_handle_t*)Handle;
@@ -1074,7 +1074,7 @@ extern int gc_gralloc_notify_change(buffer_handle_t Handle)
     return 0;
 }
 
-extern int setHwType71D4()
+int setHwType71D4()
 {
     //log_func_entry;
     static gceHARDWARE_TYPE hwtype = gcvHARDWARE_INVALID;
@@ -1106,7 +1106,7 @@ extern int setHwType71D4()
     return gcoHAL_SetHardwareType(0, hwtype);
 }
 
-extern int
+int
 gc_gralloc_unwrap(buffer_handle_t Handle)
 {
     //log_func_entry;
@@ -1125,7 +1125,7 @@ gc_gralloc_unwrap(buffer_handle_t Handle)
     return 0;
 }
 
-extern int
+int
 gc_gralloc_wrap(buffer_handle_t Handle, int w, int h, int format, int stride, int offset, void *vaddr)
 {
    //log_func_entry;
@@ -1275,7 +1275,7 @@ gc_gralloc_wrap(buffer_handle_t Handle, int w, int h, int format, int stride, in
     return -EFAULT;
 }
 
-extern int
+int
 gc_gralloc_register_wrap(private_handle_t *Handle, int32_t offset, void* Vaddr)
 {
     //log_func_entry;

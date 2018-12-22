@@ -46,7 +46,7 @@ LOCAL_SRC_FILES += \
     GcuEngine.cpp
 endif
 
-LOCAL_C_INCLUDES := $(common_includes) $(kernel_includes) \
+LOCAL_C_INCLUDES := $(common_includes) \
     hardware/libhardware/include \
     hardware/marvell/display/pxa1908/libHWComposerGC/include \
     hardware/marvell/display/pxa1908/libGAL/include
@@ -88,7 +88,7 @@ ifeq ($(BOARD_ENABLE_WFD_OPTIMIZATION), true)
 LOCAL_CFLAGS += -DENABLE_WFD_OPTIMIZATION
 endif
 
-LOCAL_C_INCLUDES += hardware/marvelldisplay/pxa1908/hwcomposerGC
+LOCAL_C_INCLUDES += hardware/marvell/display/pxa1908/libHWComposerGC
 LOCAL_SHARED_LIBRARIES += libHWComposerGC
 LOCAL_CFLAGS += -DENABLE_HWC_GC_PATH
 LOCAL_CFLAGS += -DINTEGRATED_WITH_MARVELL
@@ -102,28 +102,3 @@ endif
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
-
-#LOCAL_PATH:= $(call my-dir)
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES += \
-    HWCFenceTest.cpp \
-    HWCFenceManager.cpp \
-
-
-LOCAL_C_INCLUDES := \
-    hardware/libhardware/include \
-    hardware/marvell/display/pxa1908/libgralloc
-
-
-LOCAL_CFLAGS += -g
-
-LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libbinder libsync libui
-LOCAL_PRELINK_MODULE := false
-# LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/bin
-LOCAL_LDLIBS += -lpthread -lrt
-LOCAL_MODULE := HWCFenceTest
-LOCAL_CFLAGS += -DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION)
-LOCAL_MODULE_TAGS := optional
-
-# include $(BUILD_EXECUTABLE)

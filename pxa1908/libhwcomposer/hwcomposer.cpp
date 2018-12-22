@@ -107,7 +107,7 @@ struct hwc_context_t {
     sp<HWCDisplayEventMonitor> monitor;
 };
 
-extern int hwc_device_open(const struct hw_module_t* module, const char* name,
+static int hwc_device_open(const struct hw_module_t* module, const char* name,
         struct hw_device_t** device);
 
 static struct hw_module_methods_t hwc_module_methods = {
@@ -131,7 +131,7 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
 };
 
 /*****************************************************************************/
-extern void dump_layer(hwc_layer_1_t const* l) {
+static void dump_layer(hwc_layer_1_t const* l) {
     ALOGD("\ttype=%d, flags=%08x, handle=%p, tr=%02x, blend=%04x, {%d,%d,%d,%d}, {%d,%d,%d,%d}",
             l->compositionType, l->flags, l->handle, l->transform, l->blending,
             l->sourceCrop.left,
@@ -144,7 +144,7 @@ extern void dump_layer(hwc_layer_1_t const* l) {
             l->displayFrame.bottom);
 }
 
-extern int hwc_prepare(hwc_composer_device_1_t *dev, size_t numDisplays, hwc_display_contents_1_t** displays) {
+static int hwc_prepare(hwc_composer_device_1_t *dev, size_t numDisplays, hwc_display_contents_1_t** displays) {
     ATRACE_CALL();
     if (displays) {
         struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -167,7 +167,7 @@ extern int hwc_prepare(hwc_composer_device_1_t *dev, size_t numDisplays, hwc_dis
     return 0;
 }
 
-extern int hwc_set(struct hwc_composer_device_1 *dev,
+static int hwc_set(struct hwc_composer_device_1 *dev,
                 size_t numDisplays, hwc_display_contents_1_t** displays)
 {
     ATRACE_CALL();
@@ -214,7 +214,7 @@ extern int hwc_set(struct hwc_composer_device_1 *dev,
     return status;
 }
 
-extern int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank)
+static int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank)
 {
     int status = 0;
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -246,7 +246,7 @@ extern int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank)
 
 }
 
-extern int hwc_getDisplayConfigs(struct hwc_composer_device_1* dev, int disp,
+static int hwc_getDisplayConfigs(struct hwc_composer_device_1* dev, int disp,
             uint32_t* configs, size_t* numConfigs)
 {
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -293,7 +293,7 @@ extern int hwc_getDisplayConfigs(struct hwc_composer_device_1* dev, int disp,
     return 0;
 }
 
-extern int hwc_getDisplayAttributes(struct hwc_composer_device_1* dev, int disp,
+static int hwc_getDisplayAttributes(struct hwc_composer_device_1* dev, int disp,
             uint32_t config, const uint32_t* attributes, int32_t* values)
 {
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -370,7 +370,7 @@ extern int hwc_getDisplayAttributes(struct hwc_composer_device_1* dev, int disp,
     return 0;
 }
 
-extern void hwc_dump(hwc_composer_device_1_t *dev,
+static void hwc_dump(hwc_composer_device_1_t *dev,
         char *buff,
         int buff_len) {
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -390,7 +390,7 @@ extern void hwc_dump(hwc_composer_device_1_t *dev,
 #endif
 }
 
-extern int hwc_query(hwc_composer_device_1_t *dev,
+static int hwc_query(hwc_composer_device_1_t *dev,
         int what, int* value)
 {
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -421,7 +421,7 @@ extern int hwc_query(hwc_composer_device_1_t *dev,
     return 0;
 }
 
-extern void hwc_registerProcs(hwc_composer_device_1_t* dev,
+static void hwc_registerProcs(hwc_composer_device_1_t* dev,
                                     hwc_procs_t const* procs)
 {
     struct hwc_context_t *ctx = (struct hwc_context_t *)dev;
@@ -434,7 +434,7 @@ extern void hwc_registerProcs(hwc_composer_device_1_t* dev,
 
 
 
-extern int hwc_device_close(struct hw_device_t *dev)
+static int hwc_device_close(struct hw_device_t *dev)
 {
     struct hwc_context_t* ctx = (struct hwc_context_t*)dev;
     if (ctx) {
@@ -465,7 +465,7 @@ extern int hwc_device_close(struct hw_device_t *dev)
     return 0;
 }
 
-extern int hwc_event_control(hwc_composer_device_1_t* dev, int disp,
+static int hwc_event_control(hwc_composer_device_1_t* dev, int disp,
         int event, int enabled)
 {
     struct hwc_context_t* ctx = (struct hwc_context_t*)dev;
@@ -486,7 +486,7 @@ extern int hwc_event_control(hwc_composer_device_1_t* dev, int disp,
 
 /*****************************************************************************/
 
-extern int hwc_device_open(const struct hw_module_t* module, const char* name,
+static int hwc_device_open(const struct hw_module_t* module, const char* name,
         struct hw_device_t** device)
 {
     int status = 0;

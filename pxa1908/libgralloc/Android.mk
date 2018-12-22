@@ -25,6 +25,8 @@ LOCAL_PATH	:= $(call my-dir)
 #
 
 include $(LOCAL_PATH)/../common.mk
+
+ifeq (0,1)
 include $(CLEAR_VARS)
 
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps) $(kernel_deps)
@@ -59,12 +61,23 @@ LOCAL_CFLAGS := \
 LOCAL_CFLAGS += $(common_flags) -DUSE_ION 
 
 include $(BUILD_SHARED_LIBRARY)
+endif
 
 # We need stock library till we reverse the last functionnality
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := gralloc.stock.so
 
 LOCAL_MODULE := gralloc.stock
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_SUFFIX := .so
+LOCAL_MODULE_TAG := optional
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := gralloc.mrvl.so
+
+LOCAL_MODULE := gralloc.mrvl
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_MODULE_TAG := optional

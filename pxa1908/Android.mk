@@ -1,7 +1,8 @@
 # Prebuild stock libraries
 display-hals := libGAL libgcu libHWComposerGC
 # HAL Libraries
-display-hals += libhwcomposer libgralloc
+display-hals += libhwcomposer
+display-hals += libgralloc
 display-hals += libmemtrack
 #ifneq ($(TARGET_PROVIDES_LIBLIGHT),true)
 #display-hals += liblight
