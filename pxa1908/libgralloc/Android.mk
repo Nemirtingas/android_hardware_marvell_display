@@ -23,7 +23,12 @@ LOCAL_PATH	:= $(call my-dir)
 #
 # gralloc.<property>.so
 #
+
+include $(LOCAL_PATH)/../common.mk
 include $(CLEAR_VARS)
+
+LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps) $(kernel_deps)
+LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)
 
 LOCAL_SRC_FILES := \
     libstock.cpp \
@@ -35,10 +40,8 @@ LOCAL_SRC_FILES := \
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
-#LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
-LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libbinder libmvmem libGAL
-LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)
+LOCAL_SHARED_LIBRARIES := $(common_libs) libbinder libmvmem libGAL
+LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes) device/samsung/pxa1908-common/mvmem
 
 # See hardware/libhardware/modules/README.android to see how this is named.
 
@@ -53,14 +56,11 @@ LOCAL_CFLAGS := \
     -DANDROID_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DFRAMEBUFFER_PIXEL_FORMAT=$(FRAMEBUFFER_PIXEL_FORMAT)
 
-LOCAL_C_INCLUDES += hardware/marvell/pxa1908/original-kernel-headers device/samsung/pxa1908-common/mvmem
-
-LOCAL_CFLAGS += -DUSE_ION
-
-LOCAL_CFLAGS += $(CFLAGS)
+LOCAL_CFLAGS += $(common_flags) -DUSE_ION 
 
 include $(BUILD_SHARED_LIBRARY)
 
+# We need stock library till we reverse the last functionnality
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := gralloc.stock.so
 
