@@ -20,6 +20,6 @@
 #define MRVL_HWCOMPOSER_DEFS_H_INCLUDED
 
  	/* Marvell specific HWC Definitions */
-	#define HWC_DISPLAY_FORMAT 7
+	#define HWC_DISPLAY_FORMAT 6
 
 #endif
