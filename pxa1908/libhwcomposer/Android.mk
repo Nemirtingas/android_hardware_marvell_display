@@ -48,7 +48,6 @@ endif
 
 LOCAL_C_INCLUDES := $(common_includes) \
     hardware/libhardware/include \
-    hardware/marvell/display/pxa1908/libHWComposerGC/include \
     hardware/marvell/display/pxa1908/libGAL/include
 
 ifeq ($(BOARD_ENABLE_OVERLAY), true)
