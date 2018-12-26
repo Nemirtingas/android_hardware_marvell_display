@@ -1,5 +1,4 @@
 #
-#  Copyright (C) 2016 Android For Marvell Project <ctx.xda@gmail.com>
 #  Copyright 2006, The Android Open Source Project
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +24,6 @@ LOCAL_PATH	:= $(call my-dir)
 #
 
 include $(LOCAL_PATH)/../common.mk
-
-ifeq (0,1)
 include $(CLEAR_VARS)
 
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps) $(kernel_deps)
@@ -43,11 +40,11 @@ LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_SHARED_LIBRARIES := $(common_libs) libbinder libmvmem libGAL
-LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes) device/samsung/pxa1908-common/mvmem
+LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes)
 
 # See hardware/libhardware/modules/README.android to see how this is named.
 
-LOCAL_MODULE := gralloc.mrvl
+LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
 
 # With front buffer rendering, gralloc always provides the same buffer 
 # when GRALLOC_USAGE_HW_FB. Obviously there is no synchronization with the display.
@@ -61,23 +58,12 @@ LOCAL_CFLAGS := \
 LOCAL_CFLAGS += $(common_flags) -DUSE_ION 
 
 include $(BUILD_SHARED_LIBRARY)
-endif
 
 # We need stock library till we reverse the last functionnality
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := gralloc.stock.so
 
 LOCAL_MODULE := gralloc.stock
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_MODULE_SUFFIX := .so
-LOCAL_MODULE_TAG := optional
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
-include $(BUILD_PREBUILT)
-
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := gralloc.mrvl.so
-
-LOCAL_MODULE := gralloc.mrvl
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_MODULE_TAG := optional

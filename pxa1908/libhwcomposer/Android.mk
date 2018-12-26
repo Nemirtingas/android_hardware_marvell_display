@@ -1,5 +1,6 @@
-# Copyright (C) 2016 Android For Marvell Project <ctx.xda@gmail.com>
+#
 # Copyright (C) 2008 The Android Open Source Project
+# Copyright (c) 2010-2012,2014 The Linux Foundation. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+
 
 LOCAL_PATH:= $(call my-dir)
 # HAL module implemenation, not prelinked and stored in
@@ -75,7 +78,7 @@ LOCAL_SHARED_LIBRARIES += libbinder \
                           libsync
 endif
 
-LOCAL_MODULE := hwcomposer.mrvl
+LOCAL_MODULE := hwcomposer.$(TARGET_BOARD_PLATFORM)
 
 LOCAL_CFLAGS:= -DLOG_TAG=\"HWComposerMarvell\"
 

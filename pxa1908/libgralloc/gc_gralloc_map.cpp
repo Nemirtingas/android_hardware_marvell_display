@@ -1,20 +1,19 @@
-/****************************************************************************
-**
-** Copyright 2006, The Android Open Source Project
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-**
-*****************************************************************************/
+/*
+ * Copyright (C) 2016 The CyanogenMod Project
+ *               2017 The LineageOS Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <limits.h>
 #include <errno.h>
@@ -82,7 +81,7 @@ pid_t gettid() { return syscall(__NR_gettid);}
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-int
+extern int
 gc_gralloc_map(
     buffer_handle_t Handle,
     void** Vaddr
@@ -115,7 +114,7 @@ gc_gralloc_map(
         return 0;
     }
 
-    if( gcoSURF_Lock(hnd->surface, &Address, &Memory) != gcvSTATUS_OK )
+    if( gcoSURF_Lock(hnd->surface, &Address, &Memory) < 0 )
     {
         ALOGE("Failed to map hnd=%p", hnd);
         return -EINVAL;
@@ -145,7 +144,7 @@ gc_gralloc_map(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unmap(
     buffer_handle_t Handle
     )
@@ -167,7 +166,7 @@ gc_gralloc_unmap(
         return 0;
     }
 
-    if( gcoSURF_Unlock(hnd->surface, 0) != gcvSTATUS_OK )
+    if( gcoSURF_Unlock(hnd->surface, 0) < 0 )
     {
         ALOGE("Failed to unmap buffer=%p", hnd);
         return -EINVAL;
@@ -196,12 +195,13 @@ gc_gralloc_unmap(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_register_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     )
 {
+    (void*)Module;
     log_func_entry;
 
     //ALOGE("Not implemented gc_gralloc_register_buffer, using stock function");
@@ -212,16 +212,29 @@ gc_gralloc_register_buffer(
     gcoSURF surface = NULL;
     void *Vaddr = NULL;
     gctSIGNAL signal = 0;
-    gctUINT32 videoMem;
+    gctUINT32 videoMem = 0;
 
-    (void*)Module;
     gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
     if( private_handle_t::validate(hnd) )
         return -EINVAL;
 
-    if( gcoOS_ModuleConstructor() != gcvSTATUS_OK )
+    if( gcoOS_ModuleConstructor() < 0 )
     {
-        goto ON_ERROR;
+ON_ERROR:
+        if( Vaddr )
+            gc_gralloc_unmap(hnd);
+        if( surface )
+            gcoSURF_Destroy(surface);
+        if( signal )
+            gcoOS_DestroySignal(0, hnd->signal);
+
+        hnd->base = 0;
+        hnd->surface = NULL;
+        hnd->surfaceHigh32Bits = 0;
+        hnd->signal = NULL;
+        hnd->signalHigh32Bits = 0;
+        gcoHAL_SetHardwareType(0, hwtype);
+        return -EINVAL;
     }
 
     gcoHAL_GetHardwareType(0, &hwtype);
@@ -231,11 +244,11 @@ gc_gralloc_register_buffer(
     {
         if( hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM )
         {
-            gceSURF_TYPE flags = (gceSURF_TYPE)(gcvSURF_BITMAP|0x2000000);
-            if( (hnd->allocUsage & 4) == 0 )
-                flags = gcvSURF_BITMAP;
+            int flags = gcvSURF_BITMAP;
+            if( hnd->allocUsage & 4 )
+                flags += 0x2000000;
 
-            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, flags, hnd->surfFormat, hnd->pool, &surface) )
+            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)flags, hnd->surfFormat, hnd->pool, &surface) < 0 )
             {
                 goto ON_ERROR;
             }
@@ -243,7 +256,7 @@ gc_gralloc_register_buffer(
             status = gc_gralloc_map(hnd, &Vaddr);
             if( status == gcvSTATUS_OK )
             {
-                if( gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1) != gcvSTATUS_OK )
+                if( gcoSURF_MapUserSurface(surface, 0, (gctPOINTER)hnd->base, -1) < 0 )
                 {
                     goto ON_ERROR;
                 }
@@ -253,14 +266,14 @@ gc_gralloc_register_buffer(
         }
         else
         {
-            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface) != gcvSTATUS_OK )
+            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface) < 0 )
             {
                 goto ON_ERROR;
             }
 
             if( hnd->samples > 0 )
             {
-                if( gcoSURF_SetSamples(surface, hnd->samples) != gcvSTATUS_OK )
+                if( gcoSURF_SetSamples(surface, hnd->samples) < 0)
                 {
                     goto ON_ERROR;
                 }
@@ -275,12 +288,12 @@ gc_gralloc_register_buffer(
             surface->totalSize[104] = videoMem;
             surface->totalSize[90]  = hnd->infoA2;
             surface->totalSize[102] = hnd->infoB3;
-            if( gcoSURF_Lock(surface, 0, 0) != gcvSTATUS_OK )
+            if( gcoSURF_Lock(surface, 0, 0) < 0 )
             {
                 goto ON_ERROR;
             }
 
-            if( gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, gcvTRUE) != gcvSTATUS_OK )
+            if( gcoSURF_SetFlags(surface, gcvSURF_FLAG_CONTENT_YINVERTED, gcvTRUE) < 0 )
             {
                 goto ON_ERROR;
             }
@@ -297,7 +310,7 @@ gc_gralloc_register_buffer(
 
     if( hnd->signal )
     {
-        if( gcoOS_MapSignal(hnd->signal, &signal) != gcvSTATUS_OK )
+        if( gcoOS_MapSignal(hnd->signal, &signal) < 0 )
         {
             goto ON_ERROR;
         }
@@ -311,23 +324,6 @@ gc_gralloc_register_buffer(
     gcoHAL_SetHardwareType(0, hwtype);
 
     return 0;
-
-ON_ERROR:
-    hnd->base = 0;
-    hnd->surface = 0;
-    hnd->surfaceHigh32Bits = 0;
-    hnd->signal = 0;
-    hnd->signalHigh32Bits = 0;
-
-    if( Vaddr )
-        gc_gralloc_unmap(hnd);
-    if( surface )
-        gcoSURF_Destroy(surface);
-    if( signal )
-        gcoOS_DestroySignal(0, signal);
-
-    gcoHAL_SetHardwareType(0, hwtype);
-    return -EINVAL;
 }
 
 /*******************************************************************************
@@ -348,7 +344,7 @@ ON_ERROR:
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unregister_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -373,7 +369,7 @@ gc_gralloc_unregister_buffer(
 
     if( hnd->signal )
     {
-        if( gcoOS_UnmapSignal(hnd->signal) != gcvSTATUS_OK )
+        if( gcoOS_UnmapSignal(hnd->signal) < 0 )
         {
             gcoHAL_SetHardwareType(0, hwtype);
             return -EINVAL;
@@ -381,37 +377,35 @@ gc_gralloc_unregister_buffer(
         hnd->signal = 0;
         hnd->signalHigh32Bits = 0;
     }
-    if( hnd->surface == NULL )
+
+    if( hnd->surface == NULL || gcoSURF_Destroy(hnd->surface) >= 0 )
     {
+        hnd->clientPID = 0;
+        if( hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM )
+        {
+            if( gcoHAL_Commit(0, gcvTRUE) < 0 )
+            {
+                ALOGE("Failed to unregister buffer=%p", hnd);
+                gcoHAL_SetHardwareType(0, hwtype);
+                return -EINVAL;
+            }
+        }
+        else
+        {
+            if( gcoHAL_Commit(0, gcvFALSE) < 0 )
+            {
+                ALOGE("Failed to unregister buffer=%p", hnd);
+                gcoHAL_SetHardwareType(0, hwtype);
+                return -EINVAL;
+            }
+        }
         gcoHAL_SetHardwareType(0, hwtype);
-        return -EINVAL;
+        return 0;
     }
 
-    if( gcoSURF_Destroy(hnd->surface) != gcvSTATUS_OK )
-    {
-        gcoHAL_SetHardwareType(0, hwtype);
-        return -EINVAL;
-    }
-    hnd->clientPID = 0;
-    if( hnd->flags & private_handle_t::PRIV_FLAGS_USES_PMEM )
-    {
-        if( gcoHAL_Commit(0, gcvTRUE) != gcvSTATUS_OK )
-        {
-            gcoHAL_SetHardwareType(0, hwtype);
-            return -EINVAL;
-        }
-    }
-    else
-    {
-        if( gcoHAL_Commit(0, gcvFALSE) != gcvSTATUS_OK )
-        {
-            gcoHAL_SetHardwareType(0, hwtype);
-            return -EINVAL;
-        }
-    }
-
+    ALOGE("Failed to unregister buffer=%p", hnd);
     gcoHAL_SetHardwareType(0, hwtype);
-    return 0;
+    return -EINVAL;
 }
 
 /*******************************************************************************
@@ -439,7 +433,7 @@ gc_gralloc_unregister_buffer(
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-int
+extern int
 gc_gralloc_lock(
     gralloc_module_t const* Module,
     buffer_handle_t Handle,
@@ -453,7 +447,7 @@ gc_gralloc_lock(
 {
     //log_func_entry;
 
-    gceHARDWARE_TYPE hwtype;
+    gceHARDWARE_TYPE hwtype = gcvHARDWARE_3D;
     private_handle_t *hnd = (private_handle_t*)Handle;
 
     if( private_handle_t::validate(hnd) )
@@ -487,7 +481,7 @@ gc_gralloc_lock(
 **  gc_gralloc_ycbcr
 **
 */
-int
+extern int
 gc_gralloc_lock_ycbcr(
     gralloc_module_t const * Module,
     buffer_handle_t Handle,
@@ -526,7 +520,7 @@ gc_gralloc_lock_ycbcr(
         gcoSURF_Unlock(hnd->surface, 0);
         ycbcr->cb = (void*)colors[1];
         ycbcr->cr = (void*)(colors[1]+1);
-        ycbcr->y  = (void*)colors[1];
+        ycbcr->y  = (void*)colors[0];
         gcoSURF_GetAlignedSize(hnd->surface, 0, 0, &stride);
         ycbcr->chroma_step = 2;
         ycbcr->ystride = stride;
@@ -556,7 +550,7 @@ gc_gralloc_lock_ycbcr(
 **      Nothing.
 **
 */
-int
+extern int
 gc_gralloc_unlock(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -609,7 +603,7 @@ gc_gralloc_unlock(
 **      Nothing.
 */
 
-int
+extern int
 gc_gralloc_flush(
     buffer_handle_t Handle,
     uint32_t flags

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2016 The CyanogenMod Project
+ *               2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
-* (C) Copyright 2010 Marvell International Ltd.
-* All Rights Reserved
-*
-* MARVELL CONFIDENTIAL
-* Copyright 2008 ~ 2010 Marvell International Ltd All Rights Reserved.
-* The source code contained or described herein and all documents related to
-* the source code ("Material") are owned by Marvell International Ltd or its
-* suppliers or licensors. Title to the Material remains with Marvell International Ltd
-* or its suppliers and licensors. The Material contains trade secrets and
-* proprietary and confidential information of Marvell or its suppliers and
-* licensors. The Material is protected by worldwide copyright and trade secret
-* laws and treaty provisions. No part of the Material may be used, copied,
-* reproduced, modified, published, uploaded, posted, transmitted, distributed,
-* or disclosed in any way without Marvell's prior express written permission.
-*
-* No license under any patent, copyright, trade secret or other intellectual
-* property right is granted to or conferred upon you by disclosure or delivery
-* of the Materials, either expressly, by implication, inducement, estoppel or
-* otherwise. Any license under such intellectual property rights must be
-* express and approved by Marvell in writing.
-*
-*/
 
 #include <hardware/hardware.h>
 
@@ -121,7 +98,7 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
         hal_api_version: (uint16_t)HARDWARE_HAL_API_VERSION,
         id: HWC_HARDWARE_MODULE_ID,
         name: "Marvell Hardware Composer HAL",
-        author: "Marvel PIE",
+        author: "Nemirtingas (Maxime P)",
         methods: &hwc_module_methods,
         dso : NULL,
         reserved : {0,0,0,0,0,0,0,0,0,0,

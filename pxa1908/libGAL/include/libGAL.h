@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 The CyanogenMod Project
+ *               2017 The LineageOS Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+               
 #ifndef LIBGAL_H_
 #define LIBGAL_H_
 
@@ -63,65 +80,90 @@ typedef union  _gcuVIDMEM_NODE *        gcuVIDMEM_NODE_PTR;
 
 typedef enum _gceSTATUS
 {
-  gcvSTATUS_OK = 0x0,
-  gcvSTATUS_FALSE = 0x0,
-  gcvSTATUS_TRUE = 0x1,
-  gcvSTATUS_NO_MORE_DATA = 0x2,
-  gcvSTATUS_CACHED = 0x3,
-  gcvSTATUS_MIPMAP_TOO_LARGE = 0x4,
-  gcvSTATUS_NAME_NOT_FOUND = 0x5,
-  gcvSTATUS_NOT_OUR_INTERRUPT = 0x6,
-  gcvSTATUS_MISMATCH = 0x7,
-  gcvSTATUS_MIPMAP_TOO_SMALL = 0x8,
-  gcvSTATUS_LARGER = 0x9,
-  gcvSTATUS_SMALLER = 0xA,
-  gcvSTATUS_CHIP_NOT_READY = 0xB,
-  gcvSTATUS_NEED_CONVERSION = 0xC,
-  gcvSTATUS_SKIP = 0xD,
-  gcvSTATUS_DATA_TOO_LARGE = 0xE,
-  gcvSTATUS_INVALID_CONFIG = 0xF,
-  gcvSTATUS_CHANGED = 0x10,
-  gcvSTATUS_NOT_SUPPORT_DITHER = 0x11,
-  gcvSTATUS_EXECUTED = 0x12,
-  gcvSTATUS_TERMINATE = 0x13,
-  gcvSTATUS_INVALID_ARGUMENT = 0xFFFFFFFF,
-  gcvSTATUS_INVALID_OBJECT = 0xFFFFFFFE,
-  gcvSTATUS_OUT_OF_MEMORY = 0xFFFFFFFD,
-  gcvSTATUS_MEMORY_LOCKED = 0xFFFFFFFC,
-  gcvSTATUS_MEMORY_UNLOCKED = 0xFFFFFFFB,
-  gcvSTATUS_HEAP_CORRUPTED = 0xFFFFFFFA,
-  gcvSTATUS_GENERIC_IO = 0xFFFFFFF9,
-  gcvSTATUS_INVALID_ADDRESS = 0xFFFFFFF8,
-  gcvSTATUS_CONTEXT_LOSSED = 0xFFFFFFF7,
-  gcvSTATUS_TOO_COMPLEX = 0xFFFFFFF6,
-  gcvSTATUS_BUFFER_TOO_SMALL = 0xFFFFFFF5,
-  gcvSTATUS_INTERFACE_ERROR = 0xFFFFFFF4,
-  gcvSTATUS_NOT_SUPPORTED = 0xFFFFFFF3,
-  gcvSTATUS_MORE_DATA = 0xFFFFFFF2,
-  gcvSTATUS_TIMEOUT = 0xFFFFFFF1,
-  gcvSTATUS_OUT_OF_RESOURCES = 0xFFFFFFF0,
-  gcvSTATUS_INVALID_DATA = 0xFFFFFFEF,
-  gcvSTATUS_INVALID_MIPMAP = 0xFFFFFFEE,
-  gcvSTATUS_NOT_FOUND = 0xFFFFFFED,
-  gcvSTATUS_NOT_ALIGNED = 0xFFFFFFEC,
-  gcvSTATUS_INVALID_REQUEST = 0xFFFFFFEB,
-  gcvSTATUS_GPU_NOT_RESPONDING = 0xFFFFFFEA,
-  gcvSTATUS_TIMER_OVERFLOW = 0xFFFFFFE9,
-  gcvSTATUS_VERSION_MISMATCH = 0xFFFFFFE8,
-  gcvSTATUS_LOCKED = 0xFFFFFFE7,
-  gcvSTATUS_INTERRUPTED = 0xFFFFFFE6,
-  gcvSTATUS_DEVICE = 0xFFFFFFE5,
-  gcvSTATUS_GLOBAL_TYPE_MISMATCH = 0xFFFFFC18,
-  gcvSTATUS_TOO_MANY_ATTRIBUTES = 0xFFFFFC17,
-  gcvSTATUS_TOO_MANY_UNIFORMS = 0xFFFFFC16,
-  gcvSTATUS_TOO_MANY_VARYINGS = 0xFFFFFC15,
-  gcvSTATUS_UNDECLARED_VARYING = 0xFFFFFC14,
-  gcvSTATUS_VARYING_TYPE_MISMATCH = 0xFFFFFC13,
-  gcvSTATUS_MISSING_MAIN = 0xFFFFFC12,
-  gcvSTATUS_NAME_MISMATCH = 0xFFFFFC11,
-  gcvSTATUS_INVALID_INDEX = 0xFFFFFC10,
-  gcvSTATUS_UNIFORM_TYPE_MISMATCH = 0xFFFFFC0F,
-} gceSTATUS;
+    gcvSTATUS_OK                    =   0,
+    gcvSTATUS_FALSE                 =   0,
+    gcvSTATUS_TRUE                  =   1,
+    gcvSTATUS_NO_MORE_DATA          =   2,
+    gcvSTATUS_CACHED                =   3,
+    gcvSTATUS_MIPMAP_TOO_LARGE      =   4,
+    gcvSTATUS_NAME_NOT_FOUND        =   5,
+    gcvSTATUS_NOT_OUR_INTERRUPT     =   6,
+    gcvSTATUS_MISMATCH              =   7,
+    gcvSTATUS_MIPMAP_TOO_SMALL      =   8,
+    gcvSTATUS_LARGER                =   9,
+    gcvSTATUS_SMALLER               =   10,
+    gcvSTATUS_CHIP_NOT_READY        =   11,
+    gcvSTATUS_NEED_CONVERSION       =   12,
+    gcvSTATUS_SKIP                  =   13,
+    gcvSTATUS_DATA_TOO_LARGE        =   14,
+    gcvSTATUS_INVALID_CONFIG        =   15,
+    gcvSTATUS_CHANGED               =   16,
+    gcvSTATUS_NOT_SUPPORT_DITHER    =   17,
+    gcvSTATUS_EXECUTED              =   18,
+    gcvSTATUS_TERMINATE             =   19,
+
+    gcvSTATUS_INVALID_ARGUMENT      =   -1,
+    gcvSTATUS_INVALID_OBJECT        =   -2,
+    gcvSTATUS_OUT_OF_MEMORY         =   -3,
+    gcvSTATUS_MEMORY_LOCKED         =   -4,
+    gcvSTATUS_MEMORY_UNLOCKED       =   -5,
+    gcvSTATUS_HEAP_CORRUPTED        =   -6,
+    gcvSTATUS_GENERIC_IO            =   -7,
+    gcvSTATUS_INVALID_ADDRESS       =   -8,
+    gcvSTATUS_CONTEXT_LOSSED        =   -9,
+    gcvSTATUS_TOO_COMPLEX           =   -10,
+    gcvSTATUS_BUFFER_TOO_SMALL      =   -11,
+    gcvSTATUS_INTERFACE_ERROR       =   -12,
+    gcvSTATUS_NOT_SUPPORTED         =   -13,
+    gcvSTATUS_MORE_DATA             =   -14,
+    gcvSTATUS_TIMEOUT               =   -15,
+    gcvSTATUS_OUT_OF_RESOURCES      =   -16,
+    gcvSTATUS_INVALID_DATA          =   -17,
+    gcvSTATUS_INVALID_MIPMAP        =   -18,
+    gcvSTATUS_NOT_FOUND             =   -19,
+    gcvSTATUS_NOT_ALIGNED           =   -20,
+    gcvSTATUS_INVALID_REQUEST       =   -21,
+    gcvSTATUS_GPU_NOT_RESPONDING    =   -22,
+    gcvSTATUS_TIMER_OVERFLOW        =   -23,
+    gcvSTATUS_VERSION_MISMATCH      =   -24,
+    gcvSTATUS_LOCKED                =   -25,
+    gcvSTATUS_INTERRUPTED           =   -26,
+    gcvSTATUS_DEVICE                =   -27,
+    gcvSTATUS_NOT_MULTI_PIPE_ALIGNED =   -28,
+
+    /* Linker errors. */
+    gcvSTATUS_GLOBAL_TYPE_MISMATCH              =   -1000,
+    gcvSTATUS_TOO_MANY_ATTRIBUTES               =   -1001,
+    gcvSTATUS_TOO_MANY_UNIFORMS                 =   -1002,
+    gcvSTATUS_TOO_MANY_VARYINGS                 =   -1003,
+    gcvSTATUS_UNDECLARED_VARYING                =   -1004,
+    gcvSTATUS_VARYING_TYPE_MISMATCH             =   -1005,
+    gcvSTATUS_MISSING_MAIN                      =   -1006,
+    gcvSTATUS_NAME_MISMATCH                     =   -1007,
+    gcvSTATUS_INVALID_INDEX                     =   -1008,
+    gcvSTATUS_UNIFORM_MISMATCH                  =   -1009,
+    gcvSTATUS_UNSAT_LIB_SYMBOL                  =   -1010,
+    gcvSTATUS_TOO_MANY_SHADERS                  =   -1011,
+    gcvSTATUS_LINK_INVALID_SHADERS              =   -1012,
+    gcvSTATUS_CS_NO_WORKGROUP_SIZE              =   -1013,
+    gcvSTATUS_LINK_LIB_ERROR                    =   -1014,
+    gcvSTATUS_SHADER_VERSION_MISMATCH           =   -1015,
+    gcvSTATUS_TOO_MANY_INSTRUCTION              =   -1016,
+    gcvSTATUS_SSBO_MISMATCH                     =   -1017,
+    gcvSTATUS_TOO_MANY_OUTPUT                   =   -1018,
+    gcvSTATUS_TOO_MANY_INPUT                    =   -1019,
+    gcvSTATUS_NOT_SUPPORT_CL                    =   -1020,
+    gcvSTATUS_NOT_SUPPORT_INTEGER               =   -1021,
+    gcvSTATUS_UNIFORM_TYPE_MISMATCH             =   -1022,
+    gcvSTATUS_TOO_MANY_SAMPLER                  =   -1023,
+    /* Compiler errors. */
+    gcvSTATUS_COMPILER_FE_PREPROCESSOR_ERROR    =   -2000,
+    gcvSTATUS_COMPILER_FE_PARSER_ERROR          =   -2001,
+
+    /* Recompilation Errors */
+    gcvSTATUS_RECOMPILER_CONVERT_UNIMPLEMENTED  =   -3000,
+}
+gceSTATUS;
 
 typedef enum _gceCACHEOPERATION
 {
@@ -471,14 +513,29 @@ gceSTATUS gcoSURF_SetSamples(gcoSURF Surface,gctUINT Samples);
 gceSTATUS gcoSURF_QueryVidMemNode(gcoSURF Surface,gcuVIDMEM_NODE_PTR * Node,gcePOOL * Pool,gctUINT_PTR Bytes);
 gceSTATUS gcoSURF_SetRect(gcoSURF Surface, gctUINT Width, gctUINT Height);
 
-gceSTATUS gcoHAL_GetHardwareType(gctINT32,  gceHARDWARE_TYPE *hwtype);
-gceSTATUS gcoHAL_SetHardwareType(gctINT32,  gceHARDWARE_TYPE hwtype);
+gceSTATUS gcoHAL_GetHardwareType(gcoHAL Hal,  gceHARDWARE_TYPE *hwtype);
+gceSTATUS gcoHAL_SetHardwareType(gcoHAL Hal,  gceHARDWARE_TYPE hwtype);
 gceSTATUS gcoHAL_ImportVideoMemory(gctUINT32 Name,gctUINT32 * Handle);
 gceSTATUS gcoHAL_Commit(gcoHAL Hal, gctBOOL Stall);
 gceSTATUS gcoHAL_QueryPixelPipesInfo(gctUINT32 * pixelPipes,gctUINT32 * resolveAlignmentX,gctUINT32 * resolveAlignmentY);
 gceSTATUS gcoHAL_NameVideoMemory(gctUINT32 Handle,gctUINT32 * Name);
 
 gceSTATUS gcoTEXTURE_GetClosestFormat(gcoHAL Hal,gceSURF_FORMAT InFormat,gceSURF_FORMAT* OutFormat);
+
+#define gcmIS_ERROR(status)         (status < 0)
+#define gcmNO_ERROR(status)         (status >= 0)
+#define gcmIS_SUCCESS(status)       (status == gcvSTATUS_OK)
+
+#define gcmONERROR(func) \
+    do \
+    { \
+        status = func; \
+        if (gcmIS_ERROR(status)) \
+        { \
+            goto OnError; \
+        } \
+    } \
+    while (gcvFALSE)
 
 #ifdef __cplusplus
 }
