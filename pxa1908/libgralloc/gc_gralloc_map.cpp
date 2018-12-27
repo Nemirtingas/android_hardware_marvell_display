@@ -81,7 +81,7 @@ pid_t gettid() { return syscall(__NR_gettid);}
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-extern int
+int
 gc_gralloc_map(
     buffer_handle_t Handle,
     void** Vaddr
@@ -144,7 +144,7 @@ gc_gralloc_map(
 **      Nothing.
 **
 */
-extern int
+int
 gc_gralloc_unmap(
     buffer_handle_t Handle
     )
@@ -195,14 +195,14 @@ gc_gralloc_unmap(
 **      Nothing.
 **
 */
-extern int
+int
 gc_gralloc_register_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
     )
 {
     (void*)Module;
-    log_func_entry;
+    //log_func_entry;
 
     //ALOGE("Not implemented gc_gralloc_register_buffer, using stock function");
     //return libstock::Inst().gralloc_register_buffer(Module, Handle);
@@ -248,7 +248,7 @@ ON_ERROR:
             if( hnd->allocUsage & 4 )
                 flags += 0x2000000;
 
-            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)flags, hnd->surfFormat, hnd->pool, &surface) < 0 )
+            if( gcoSURF_Construct(0, hnd->width, hnd->height, 1, (gceSURF_TYPE)flags, hnd->surfFormat, hnd->pool, &surface) < 0 )
             {
                 goto ON_ERROR;
             }
@@ -266,7 +266,7 @@ ON_ERROR:
         }
         else
         {
-            if( gcoSURF_Construct(0, hnd->dirtyWidth, hnd->dirtyHeight, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface) < 0 )
+            if( gcoSURF_Construct(0, hnd->width, hnd->height, 1, (gceSURF_TYPE)(hnd->surfType|gcvSURF_NO_VIDMEM), hnd->surfFormat, hnd->pool, &surface) < 0 )
             {
                 goto ON_ERROR;
             }
@@ -344,7 +344,7 @@ ON_ERROR:
 **      Nothing.
 **
 */
-extern int
+int
 gc_gralloc_unregister_buffer(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -433,7 +433,7 @@ gc_gralloc_unregister_buffer(
 **      void ** Vaddr
 **          Point to save virtual address pointer.
 */
-extern int
+int
 gc_gralloc_lock(
     gralloc_module_t const* Module,
     buffer_handle_t Handle,
@@ -481,7 +481,7 @@ gc_gralloc_lock(
 **  gc_gralloc_ycbcr
 **
 */
-extern int
+int
 gc_gralloc_lock_ycbcr(
     gralloc_module_t const * Module,
     buffer_handle_t Handle,
@@ -550,7 +550,7 @@ gc_gralloc_lock_ycbcr(
 **      Nothing.
 **
 */
-extern int
+int
 gc_gralloc_unlock(
     gralloc_module_t const * Module,
     buffer_handle_t Handle
@@ -603,7 +603,7 @@ gc_gralloc_unlock(
 **      Nothing.
 */
 
-extern int
+int
 gc_gralloc_flush(
     buffer_handle_t Handle,
     uint32_t flags

@@ -110,10 +110,10 @@ struct private_handle_t {
     int32_t size;
     int64_t offset;
     int format;
-    int dirtyWidth;
-    int dirtyHeight;
-    int field_34; // int     bpr;
-    int field_38; // int     fbpost_offset;
+    int width;
+    int height;
+    int mem_xstride;
+    int mem_ystride;
     int field_3C; // int     needUnregister;
     gcoSURF surface; // its a pointer, looks like gal pointers are 64b
     int surfaceHigh32Bits; // High 32b of surface
@@ -162,10 +162,10 @@ struct private_handle_t {
         size(size),
         offset(0),
         format(0),
-        dirtyWidth(0),
-        dirtyHeight(0),
-        field_34(0),
-        field_38(0),
+        width(0),
+        height(0),
+        mem_xstride(0),
+        mem_ystride(0),
         base(0),
         pid(getpid())
     {
