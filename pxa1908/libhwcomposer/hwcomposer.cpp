@@ -91,7 +91,9 @@ static struct hw_module_methods_t hwc_module_methods = {
     open: hwc_device_open
 };
 
-hwc_module_t HAL_MODULE_INFO_SYM = {
+hwc_module_t HAL_MODULE_INFO_SYM
+__attribute__ ((visibility ("default"))) =
+{
     common: {
         tag: HARDWARE_MODULE_TAG,
         module_api_version: (uint16_t)HWC_DEVICE_API_VERSION_1_0,

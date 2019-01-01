@@ -32,7 +32,6 @@
 #include <linux/fb.h>
 
 #include <libGAL.h>
-#include "libstock.h"
 
 struct private_module_t;
 struct private_handle_t;

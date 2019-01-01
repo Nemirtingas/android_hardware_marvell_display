@@ -204,9 +204,6 @@ gc_gralloc_register_buffer(
     (void*)Module;
     //log_func_entry;
 
-    //ALOGE("Not implemented gc_gralloc_register_buffer, using stock function");
-    //return libstock::Inst().gralloc_register_buffer(Module, Handle);
-
     private_handle_t *hnd = (private_handle_t*)Handle;
     int status;
     gcoSURF surface = NULL;

@@ -29,23 +29,6 @@ include $(CLEAR_VARS)
 LOCAL_ADDITIONAL_DEPENDENCIES := $(common_deps) $(kernel_deps)
 LOCAL_COPY_HEADERS_TO         := $(common_header_export_path)
 
-LOCAL_SRC_FILES := \
-    libstock.cpp \
-	gc_gralloc_fb.cpp \
-	gc_gralloc_alloc.cpp \
-    gc_gralloc_map.cpp \
-	gralloc.cpp
-
-LOCAL_PRELINK_MODULE := false
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
-LOCAL_SHARED_LIBRARIES := $(common_libs) libbinder libmvmem libGAL
-LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes)
-
-# See hardware/libhardware/modules/README.android to see how this is named.
-
-LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
-
 # With front buffer rendering, gralloc always provides the same buffer 
 # when GRALLOC_USAGE_HW_FB. Obviously there is no synchronization with the display.
 # Can be used to test non-VSYNC-locked rendering.
@@ -57,15 +40,24 @@ LOCAL_CFLAGS := \
 
 LOCAL_CFLAGS += $(common_flags) -DUSE_ION 
 
-include $(BUILD_SHARED_LIBRARY)
+LOCAL_SRC_FILES := \
+	gc_gralloc_fb.cpp \
+	gc_gralloc_alloc.cpp \
+    gc_gralloc_map.cpp \
+	gralloc.cpp
+
+LOCAL_PRELINK_MODULE := false
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
+LOCAL_SHARED_LIBRARIES := $(common_libs) libbinder libmvmem libGAL
+LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes)
 
 # We need stock library till we reverse the last functionnality
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES := gralloc.stock.so
+LOCAL_ADDITIONAL_DEPENDENCIES += \
+    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/gralloc.stock.so
 
-LOCAL_MODULE := gralloc.stock
-LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_MODULE_SUFFIX := .so
-LOCAL_MODULE_TAG := optional
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
-include $(BUILD_PREBUILT)
+# See hardware/libhardware/modules/README.android to see how this is named.
+
+LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
+
+include $(BUILD_SHARED_LIBRARY)

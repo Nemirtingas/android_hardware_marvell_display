@@ -16,7 +16,7 @@ common_libs := liblog libutils libcutils libhardware
 #Common C flags
 common_flags := -DDEBUG_CALC_FPS -Wno-missing-field-initializers
 #TODO: Add -Werror back once all the current warnings are fixed
-common_flags += -Wconversion -Wall
+common_flags += -Wconversion -Wall -fvisibility=hidden -Wunused
 
 common_deps  :=
 kernel_includes :=

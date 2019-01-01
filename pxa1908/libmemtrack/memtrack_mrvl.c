@@ -164,7 +164,9 @@ static struct hw_module_methods_t memtrack_module_methods = {
     .open = NULL,
 };
 
-struct memtrack_module HAL_MODULE_INFO_SYM = {
+struct memtrack_module HAL_MODULE_INFO_SYM
+__attribute__ ((visibility ("default"))) =
+{
     common: {
         tag: HARDWARE_MODULE_TAG,
         module_api_version: MEMTRACK_MODULE_API_VERSION_0_1,

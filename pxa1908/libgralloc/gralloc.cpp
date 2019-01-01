@@ -77,7 +77,8 @@ static struct hw_module_methods_t gralloc_module_methods =
     open: gralloc_device_open
 };
 
-struct private_module_t HAL_MODULE_INFO_SYM =
+struct private_module_t HAL_MODULE_INFO_SYM
+__attribute__ ((visibility ("default"))) =
 {
     base:
     {
