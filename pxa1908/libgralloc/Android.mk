@@ -52,10 +52,6 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_SHARED_LIBRARIES := $(common_libs) libbinder libmvmem libGAL
 LOCAL_C_INCLUDES       := $(common_includes) $(kernel_includes)
 
-# We need stock library till we reverse the last functionnality
-LOCAL_ADDITIONAL_DEPENDENCIES += \
-    $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/gralloc.stock.so
-
 # See hardware/libhardware/modules/README.android to see how this is named.
 
 LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
