@@ -1,7 +1,6 @@
 #Common headers
 common_includes := $(LOCAL_PATH)/../libgralloc
 #common_includes += $(LOCAL_PATH)/../liboverlay
-#common_includes += $(LOCAL_PATH)/../libcopybit
 #common_includes += $(LOCAL_PATH)/../libqdutils
 common_includes += $(LOCAL_PATH)/../libhwcomposer
 #common_includes += $(LOCAL_PATH)/../libexternal
@@ -17,6 +16,10 @@ common_libs := liblog libutils libcutils libhardware
 common_flags := -DDEBUG_CALC_FPS -Wno-missing-field-initializers
 #TODO: Add -Werror back once all the current warnings are fixed
 common_flags += -Wconversion -Wall -fvisibility=hidden -Wunused
+
+ifeq ($(BOARD_GRAPHICS_ENABLE_3D),true)
+common_flags += -DgcdENABLE_3D
+endif
 
 common_deps  :=
 kernel_includes :=

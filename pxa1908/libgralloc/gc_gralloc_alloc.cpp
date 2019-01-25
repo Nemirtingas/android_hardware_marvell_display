@@ -303,7 +303,7 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
   int v33; // r9 MAPDST
   signed int isGcAlloc; // r5
   signed int v36; // r0
-  __int32 v42; // r6
+  int32_t v42; // r6
   private_handle_t *handle = NULL; // r0 MAPDST
   int32_t size; // r3
   int v64; // r1
@@ -319,7 +319,7 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
   int callingPID; // [sp+34h] [bp-74h] MAPDST
   gceHARDWARE_TYPE hwtype; // [sp+3Ch] [bp-6Ch]
   gceSURF_FORMAT format; // [sp+44h] [bp-64h] MAPDST
-  _gcePOOL resolvePool; // [sp+48h] [bp-60h]
+  gcePOOL resolvePool;
   gcoSURF Surface; // [sp+4Ch] [bp-5Ch] MAPDST
   int name; // [sp+50h] [bp-58h]
   int v94; // [sp+54h] [bp-54h]
@@ -327,8 +327,8 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
   gctUINT32 pixelPipes; // [sp+5Ch] [bp-4Ch]
   int stride; // [sp+60h] [bp-48h] MAPDST
   int alignedHeight; // [sp+64h] [bp-44h]
-  int resolveVidNode; // [sp+68h] [bp-40h]
-  int resolveAdjustedSize; // [sp+6Ch] [bp-3Ch]
+  gctUINT32 resolveVidNode;
+  gctSIZE_T resolveAdjustedSize;
   uint32_t physAddr; // [sp+70h] [bp-38h]
   void *Vaddr; // [sp+74h] [bp-34h] MAPDST
   int alignedWidth2; // [sp+78h] [bp-30h]
@@ -405,7 +405,7 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
               mvmem_set_name(master, "gralloc");
               if ( isGcAlloc )
               {
-                v33 = mvmem_get_phys(master, &physAddr);
+                v33 = mvmem_get_phys(master, (int*)&physAddr);
                 if ( v33 < 0 )
                 {
                     mvmem_free(master);
@@ -435,7 +435,7 @@ gcoSURF_ConstructFailed:
           {
             goto gcoSURF_ConstructFailed;
           }
-          status = gcoSURF_QueryVidMemNode(Surface, (_gcuVIDMEM_NODE**)&resolveVidNode, &resolvePool, (gctUINT_PTR)&resolveAdjustedSize);
+          status = gcoSURF_QueryVidMemNode(Surface, &resolveVidNode, &resolvePool, &resolveAdjustedSize);
           if ( status < 0 )
           {
             goto gcoSURF_ConstructFailed;
