@@ -303,7 +303,7 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
   int v33; // r9 MAPDST
   signed int isGcAlloc; // r5
   signed int v36; // r0
-  __int32 v42; // r6
+  int32_t v42; // r6
   private_handle_t *handle = NULL; // r0 MAPDST
   int32_t size; // r3
   int v64; // r1
@@ -405,7 +405,7 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
               mvmem_set_name(master, "gralloc");
               if ( isGcAlloc )
               {
-                v33 = mvmem_get_phys(master, &physAddr);
+                v33 = mvmem_get_phys(master, (int32_t*)&physAddr);
                 if ( v33 < 0 )
                 {
                     mvmem_free(master);
@@ -435,7 +435,7 @@ gcoSURF_ConstructFailed:
           {
             goto gcoSURF_ConstructFailed;
           }
-          status = gcoSURF_QueryVidMemNode(Surface, (_gcuVIDMEM_NODE**)&resolveVidNode, &resolvePool, (gctUINT_PTR)&resolveAdjustedSize);
+          status = gcoSURF_QueryVidMemNode(Surface, (gctUINT32*)&resolveVidNode,(gcePOOL*) &resolvePool, (gctSIZE_T_PTR)&resolveAdjustedSize);
           if ( status < 0 )
           {
             goto gcoSURF_ConstructFailed;
