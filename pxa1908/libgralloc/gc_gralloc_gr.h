@@ -29,9 +29,7 @@
 
 #include <mvmem.h>
 
-#include <gc_hal_enum.h>
-#include <gc_hal_base.h>
-#include <gc_hal_engine.h>
+#include <libGAL.h>
 #include "gralloc_priv.h"
 
 struct private_module_t;

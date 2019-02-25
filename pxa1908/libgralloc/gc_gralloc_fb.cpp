@@ -70,8 +70,9 @@
          buffering.
          This value should equal to (yres_virtual / yres).
  */
+#ifndef NUM_BUFFERS
 #define NUM_BUFFERS               3
-
+#endif
 
 /*
      NUM_PAGES_MMAP

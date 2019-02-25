@@ -435,7 +435,7 @@ gcoSURF_ConstructFailed:
           {
             goto gcoSURF_ConstructFailed;
           }
-          status = gcoSURF_QueryVidMemNode(Surface, &resolveVidNode, &resolvePool, &resolveAdjustedSize);
+          status = gcoSURF_QueryVidMemNode(Surface, (_gcuVIDMEM_NODE**)&resolveVidNode, &resolvePool, (gctUINT_PTR)&resolveAdjustedSize);
           if ( status < 0 )
           {
             goto gcoSURF_ConstructFailed;

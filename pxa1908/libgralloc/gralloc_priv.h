@@ -31,7 +31,7 @@
 
 #include <linux/fb.h>
 
-#include <gc_hal_base.h>
+#include <libGAL.h>
 
 struct private_module_t;
 struct private_handle_t;
