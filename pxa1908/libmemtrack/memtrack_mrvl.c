@@ -102,7 +102,7 @@ extern int read_ion_debug(int pid, const char *filename, int *rsize)
         }
     }
 
-    close(file);
+    fclose(file);
 
     return res;
 }
