@@ -57,7 +57,7 @@ public:
 public:
     status_t open()
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
@@ -88,79 +88,79 @@ public:
 
     status_t setSrcPitch(uint32_t yPitch, uint32_t uPitch, uint32_t vPitch)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setSrcResolution(int32_t srcWidth, int32_t srcHeight, int32_t srcFormat)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setSrcCrop(uint32_t l, uint32_t t, uint32_t r, uint32_t b)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setColorKey(int32_t alpha_type, int32_t alpha_value, int32_t ck_type, int32_t ck_r, int32_t ck_g, int32_t ck_b)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setDstPosition(int32_t width, int32_t height, int32_t xOffset, int32_t yOffset)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setPartialDisplayRegion(uint32_t l, uint32_t t, uint32_t r, uint32_t b, uint32_t color)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t drawImage(void* yAddr, void* uAddr, void* vAddr, int32_t length, uint32_t addrType)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t configVdmaStatus(DISPLAY_VDMA& vdma)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t waitVSync(DISPLAY_SYNC_PATH path)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t setStreamOn(bool bOn)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t set3dVideoOn(bool bOn, uint32_t mode)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t getConsumedImages(uint32_t vAddr[], uint32_t& nImgNum)
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 
     status_t close()
     {
-        LOGD("Calling %s.", __func__);
+        ALOGD("Calling %s.", __func__);
         return NO_ERROR;
     }
 

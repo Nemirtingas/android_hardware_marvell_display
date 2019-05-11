@@ -59,7 +59,7 @@ namespace android{
         property_get("persist.dms.fbovly.log", value, "0");   \
         bool bLog = (atoi(value) == 1);                   \
         if(bLog){                                         \
-            LOGD(__VA_ARGS__);                            \
+            ALOGD(__VA_ARGS__);                            \
         }                                                 \
     }while(0)                                             \
 
@@ -97,7 +97,7 @@ public:
         const char* ov_device = m_strDevName.string();
         m_fd = ::open(ov_device, O_RDWR | O_NONBLOCK);
         if( m_fd < 0 ) {
-            LOGE("Open overlay device[%s] fail", ov_device);
+            ALOGE("Open overlay device[%s] fail", ov_device);
             return -EIO;
         }
 
@@ -145,7 +145,7 @@ public:
         colorkey.v_coloralpha = ck_b;
 
         if( ioctl(m_fd, FB_IOCTL_SET_COLORKEYnALPHA, &colorkey) ) {
-            LOGE("OVERLAY_SetConfig: Set color key failed");
+            ALOGE("OVERLAY_SetConfig: Set color key failed");
             return -EIO;
         }
         return NO_ERROR;
@@ -180,7 +180,7 @@ public:
         m_mmpSurf.addr.phys[2] = (uint32_t)vAddr;
 
         if( ioctl(m_fd, FB_IOCTL_FLIP_USR_BUF, &m_mmpSurf) ) {
-            LOGE("ioctl flip_vid failed");
+            ALOGE("ioctl flip_vid failed");
             m_releaseFd = -1;
             return -EIO;
         }
@@ -205,7 +205,7 @@ public:
         int status = bOn ? 1 : 0;
         FBOVLYWRAPPERLOG("Stream %s.", bOn ? "on" : "off");
         if( ioctl(m_fd, FB_IOCTL_ENABLE_DMA, &status) ) {
-            LOGE("ioctl OVERLAY %s FB_IOCTL_SWITCH_VID_OVLY failed", m_strDevName.string());
+            ALOGE("ioctl OVERLAY %s FB_IOCTL_SWITCH_VID_OVLY failed", m_strDevName.string());
             return -EIO;
         }
 

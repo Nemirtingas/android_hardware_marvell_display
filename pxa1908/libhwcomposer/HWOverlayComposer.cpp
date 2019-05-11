@@ -20,7 +20,7 @@
 #include <system/graphics.h>
 #include <cutils/properties.h>
 #include "HWOverlayComposer.h"
-#include "FramebufferEngine.h"
+#include "OverlayDisplayEngine/FramebufferEngine.h"
 #include "gralloc_priv.h"
 
 #define DEBUG 0
@@ -41,7 +41,7 @@ HWOverlayComposer::HWOverlayComposer() : m_nOverlayChannel(HWC_DISPLAY_PRIMARY+1
 
     m_pBaseDisplayEngine = new FBBaseLayer("/dev/graphics/fb0");
     if(m_pBaseDisplayEngine == NULL || (m_pBaseDisplayEngine->open() < 0)){
-        LOGE("ERROR: Open Base Layer Failed.");
+        ALOGE("ERROR: Open Base Layer Failed.");
     }
 
     m_pGcuEngine = new GcuEngine;
@@ -72,8 +72,10 @@ bool HWOverlayComposer::isOverlayCandidate(hwc_layer_1_t* layer)
     if( layer->flags & HWC_SKIP_LAYER )
         return false;
 
+    /*
     if( layer->flags & HWC_OVERLAY_SKIP_LAYER )
         return false;
+    */
 
     if( !isPhyConts(layer) )
         return false;
@@ -132,7 +134,7 @@ bool HWOverlayComposer::readyToRun(size_t numDisplays, hwc_display_contents_1_t*
     hwc_layer_1_t* pFbLayer = &(pPrimaryDisplayContents->hwLayers[pPrimaryDisplayContents->numHwLayers - 1]);
     if(NULL == pFbLayer
        || HWC_FRAMEBUFFER_TARGET != pFbLayer->compositionType){
-        LOGE("ERROR! primary display content is not valid for virtual composition!");
+        ALOGE("ERROR! primary display content is not valid for virtual composition!");
         return false;
     }
 
@@ -273,7 +275,7 @@ void HWOverlayComposer::set(size_t numDisplays, hwc_display_contents_1_t** displ
 
     hwc_display_contents_1_t* pPrimaryDisplayContents = displays[0];
     if(NULL == pPrimaryDisplayContents || 0 == pPrimaryDisplayContents->numHwLayers){
-        LOGE("ERROR: NULL hwc_display_contents_1_t* in primary display device!");
+        ALOGE("ERROR: NULL hwc_display_contents_1_t* in primary display device!");
         m_pPrimaryFbLayer = NULL;
     }else{
         m_pPrimaryFbLayer = &(pPrimaryDisplayContents->hwLayers[pPrimaryDisplayContents->numHwLayers - 1]);
@@ -342,7 +344,7 @@ void HWOverlayComposer::colorFillLayer(hwc_layer_1_t* pLayer, const Rect& rect, 
                                  nColor, 0, 0, NULL, true, 0);
 
     if(!m_pGcuEngine->Blit(&blitDesc)){
-        LOGE("ERROR: GCU 2D Fill Blit Error!");
+        ALOGE("ERROR: GCU 2D Fill Blit Error!");
     }
 }
 
@@ -382,7 +384,7 @@ void HWOverlayComposer::colorFillFrameBuffer(uint32_t nColor)
                                  nColor, 0, 0, NULL, true, 0);
 
     if(!m_pGcuEngine->Blit(&blitDesc)){
-        LOGE("ERROR: GCU 2D Fill Blit Error!");
+        ALOGE("ERROR: GCU 2D Fill Blit Error!");
     }
 }
 
@@ -447,7 +449,7 @@ void HWOverlayComposer::transparentizeFrameBuffer(uint32_t nAlpha)
                                  0xFF000000, 0, 0, NULL, true, nRop);
 
     if(!m_pGcuEngine->Blit(&blitDesc)){
-        LOGE("ERROR: GCU 2D Fill Blit Error!");
+        ALOGE("ERROR: GCU 2D Fill Blit Error!");
     }
 }
 

@@ -48,7 +48,8 @@
 #include <ui/Rect.h>
 
 #include "IDisplayEngine.h"
-#include "fb_ioctl.h"
+
+#include <video/mmp_ioctl.h>
 
 namespace android{
 
@@ -58,7 +59,7 @@ namespace android{
         property_get("persist.dms.fb.log", value, "0");   \
         bool bLog = (atoi(value) == 1);                   \
         if(bLog){                                         \
-            LOGD(__VA_ARGS__);                            \
+            ALOGD(__VA_ARGS__);                            \
         }                                                 \
     }while(0)                                             \
 
@@ -91,13 +92,15 @@ public:
         const char* ov_device = m_strDevName.string();
         m_fd = ::open(ov_device, O_RDWR);
         if( m_fd < 0 ) {
-            LOGE("Open overlay device[%s] fail", ov_device);
+            ALOGE("Open overlay device[%s] fail", ov_device);
             return -EIO;
         }
 
-        int32_t ret = ioctl(m_fd, FB_IOCTL_WAIT_VSYNC_ON, NULL);
+        int32_t ret = ioctl(m_fd, FB_IOCTL_WAIT_VSYNC, NULL);
+        //int32_t ret = ioctl(m_fd, FB_IOCTL_WAIT_VSYNC_ON, NULL);
         if (ret < 0){
-            LOGE("enable base layer vsync failed.");
+            ALOGE("TODO: hwcomposer overlay: this might not work");
+            ALOGE("enable base layer vsync failed.");
             return -EIO;
         }
 
@@ -114,14 +117,14 @@ public:
             int32_t ret = ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo);
             if (ret < 0)
             {
-                LOGE("ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo) failed.");
+                ALOGE("ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo) failed.");
                 return ret;
             }
 
             struct ::fb_fix_screeninfo fb_finfo;
             ret = ioctl(m_fd, FBIOGET_FSCREENINFO, &fb_finfo);
             if (ret < 0){
-                LOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
+                ALOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
                 return ret;
             }
 
@@ -143,7 +146,7 @@ public:
             ResolveScreenInfo(varInfo, caps, m_displayMode);
             int32_t ret = ioctl(m_fd, FBIOPUT_VSCREENINFO, &varInfo);
             if (ret < 0){
-                LOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
+                ALOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
                 return ret;
             }
 
@@ -162,7 +165,7 @@ public:
             int32_t ret = ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo);
             if (ret < 0)
             {
-                LOGE("ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo) failed.");
+                ALOGE("ioctl(m_fd, FBIOGET_VSCREENINFO, &varInfo) failed.");
                 return ret;
             }
 
@@ -183,7 +186,7 @@ public:
             ResolveScreenInfo(varInfo,  m_displayLayout, caps);
             int32_t ret = ioctl(m_fd, FBIOPUT_VSCREENINFO, &varInfo);
             if (ret < 0){
-                LOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
+                ALOGE("ioctl(pCrtc->io_fd, FBIOGET_FSCREENINFO, &fb_finfo) failed.");
                 return ret;
             }
 
@@ -228,16 +231,16 @@ public:
     status_t setColorKey(int32_t alpha_type, int32_t alpha_value, int32_t ck_type, int32_t ck_r, int32_t ck_g, int32_t ck_b)
     {
         FBBASEWRAPPERLOG("%s in.", __FUNCTION__);
-        struct _sColorKeyNAlpha colorkey;
+        struct mmp_colorkey_alpha colorkey;
         colorkey.config = alpha_value;
         colorkey.alphapath = alpha_type;
         colorkey.mode = ck_type;
-        colorkey.Y_ColorAlpha = ck_r;
-        colorkey.U_ColorAlpha = ck_g;
-        colorkey.V_ColorAlpha = ck_b;
+        colorkey.y_coloralpha = ck_r;
+        colorkey.u_coloralpha = ck_g;
+        colorkey.v_coloralpha = ck_b;
 
         if( ioctl(m_fd, FB_IOCTL_SET_COLORKEYnALPHA, &colorkey) ) {
-            LOGE("OVERLAY_SetConfig: Set color key failed");
+            ALOGE("OVERLAY_SetConfig: Set color key failed");
             return -EIO;
         }
         return NO_ERROR;
@@ -259,6 +262,8 @@ public:
 
     status_t setPartialDisplayRegion(uint32_t l, uint32_t t, uint32_t r, uint32_t b, uint32_t color)
     {
+        ALOGI("TODO: FrameBuffer Engine: PartialDisplay seems not used");
+        /*
         struct mvdisp_partdisp partialDisplay;
         partialDisplay.id = 0;
         partialDisplay.horpix_start = l;
@@ -271,6 +276,7 @@ public:
             ALOGE("ERROR: Fail to set partial display!");
             return -EIO;
         }
+        */
 
         return NO_ERROR;
     }
@@ -294,8 +300,9 @@ public:
         struct timeval old_time, cur_time;
         gettimeofday(&old_time, NULL);
 
-        if( ioctl(m_fd, FB_IOCTL_FLIP_VID_BUFFER, &m_overlaySurf) ) {
-            LOGE("ioctl flip_vid failed");
+        if( ioctl(m_fd, FB_IOCTL_FLIP_USR_BUF, &m_overlaySurf) ) {
+        //if( ioctl(m_fd, FB_IOCTL_FLIP_VID_BUFFER, &m_overlaySurf) ) {
+            ALOGE("ioctl flip_vid failed");
             return -EIO;
         }
 
@@ -304,7 +311,7 @@ public:
 
         if (us_time >= 2000)
         {
-            LOGD("flip video buffer too long, time duation %d us", us_time);
+            ALOGD("flip video buffer too long, time duation %d us", us_time);
         }
 
         return NO_ERROR;
@@ -313,6 +320,7 @@ public:
 
     status_t configVdmaStatus(DISPLAY_VDMA& vdma)
     {
+        /*
         FBBASEWRAPPERLOG("%s in.", __FUNCTION__);
         struct mvdisp_vdma  disp_vdma;
         disp_vdma.path = vdma.path;
@@ -320,9 +328,10 @@ public:
         disp_vdma.enable = vdma.enable;
 
         if( ioctl(m_fd, FB_IOCTL_VDMA_SET, &disp_vdma) ) {
-            LOGE("ioctl BASE %s FB_IOCTL_VDMA_EN failed", m_strDevName.string());
+            ALOGE("ioctl BASE %s FB_IOCTL_VDMA_EN failed", m_strDevName.string());
             return -EIO;
         }
+        */
 
         return NO_ERROR;
     }
@@ -347,7 +356,7 @@ public:
                 sync = SYNC_PANEL_TV;
                 break;
             default:
-                LOGE("Unknown sync path selected!");
+                ALOGE("Unknown sync path selected!");
                 return -EIO;
         }
 #else
@@ -358,7 +367,7 @@ public:
         gettimeofday(&old_time, NULL);
 
         if( ioctl(m_fd, FB_IOCTL_WAIT_VSYNC, path) ) {
-            LOGE("ioctl BASE %s FB_IOCTL_VDMA_EN failed", m_strDevName.string());
+            ALOGE("ioctl BASE %s FB_IOCTL_VDMA_EN failed", m_strDevName.string());
             return -EIO;
         }
 
@@ -367,7 +376,7 @@ public:
 
         if (us_time >= 25000)
         {
-            LOGD("Wait vsync path %d too long, time duation %d us", path, us_time);
+            ALOGD("Wait vsync path %d too long, time duation %d us", path, us_time);
         }
 
         return NO_ERROR;
@@ -375,13 +384,15 @@ public:
 
     status_t setStreamOn(bool bOn)
     {
+        /*
         FBBASEWRAPPERLOG("%s in. set stream to %s.", __FUNCTION__, bOn ? "on" : "off");
         int status = bOn ? 1 : 0;
 
         if( ioctl(m_fd, FB_IOCTL_SWITCH_GRA_OVLY, &status) ) {
-            LOGE("ioctl OVERLAY %s FB_IOCTL_SWITCH_VID_OVLY failed", m_strDevName.string());
+            ALOGE("ioctl OVERLAY %s FB_IOCTL_SWITCH_VID_OVLY failed", m_strDevName.string());
             return -EIO;
         }
+        */
 
         return NO_ERROR;
     }
@@ -390,11 +401,13 @@ public:
 
     status_t getConsumedImages(uint32_t vAddr[], uint32_t& nImgNum)
     {
+        /*
         FBBASEWRAPPERLOG("%s in.", __FUNCTION__);
         if( ioctl(m_fd, FB_IOCTL_GET_FREELIST, vAddr) ) {
-            LOGE("ioctl FB_IOCTL_GET_FREELSIT failed");
+            ALOGE("ioctl FB_IOCTL_GET_FREELSIT failed");
             return -EIO;
         }
+        */
 
         return NO_ERROR;
     }

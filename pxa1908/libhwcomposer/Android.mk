@@ -41,6 +41,19 @@ LOCAL_SRC_FILES += \
     OverlayDisplayEngine/IOverlay.cpp \
     OverlayDisplayEngine/V4L2Overlay.cpp \
     HWCFenceManager.cpp
+
+LOCAL_C_INCLUDES := $(common_includes) \
+    hardware/libhardware/include \
+    hardware/marvell/libprebuilt/pxa1908/libGAL/include \
+    system/core/libsync/
+
+ifneq ($(BOARD_ENABLE_WFD_OPTIMIZATION), true)
+LOCAL_SRC_FILES += \
+    GcuEngine.cpp
+
+LOCAL_C_INCLUDES += \
+    frameworks/native/services/
+endif
 endif
 
 ifeq ($(BOARD_ENABLE_WFD_OPTIMIZATION), true)
@@ -49,13 +62,13 @@ LOCAL_SRC_FILES += \
     GcuEngine.cpp
 endif
 
-LOCAL_C_INCLUDES := $(common_includes) \
-    hardware/libhardware/include \
-    hardware/marvell/libprebuilt/pxa1908/libGAL/include
 
 ifeq ($(BOARD_ENABLE_OVERLAY), true)
 LOCAL_C_INCLUDES += \
-    hardware/marvell/pxa1908/hwcomposer/OverlayDisplayEngine 
+    hardware/marvell/pxa1908/hwcomposer/OverlayDisplayEngine \
+    hardware/marvell/pxa1908/original-kernel-headers/ \
+    hardware/marvell/display/pxa1908/libgralloc \
+    bionic/libc/kernel/uapi/
 endif
 
 ifeq ($(BOARD_ENABLE_WFD_OPTIMIZATION), true)

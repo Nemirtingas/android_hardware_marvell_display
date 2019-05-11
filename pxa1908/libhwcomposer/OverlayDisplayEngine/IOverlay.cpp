@@ -54,13 +54,13 @@ IDisplayEngine* CreateOverlayEngine(uint32_t idx, DMSInternalConfig const * dms_
 
     IDisplayEngine* pOverlay = NULL;
     if(OVERLAY_DEVICE_V4L2 == tOvlyType){
-        LOGD("create v4l2 overlay! ---------- idx == %d ----------", idx);
+        ALOGD("create v4l2 overlay! ---------- idx == %d ----------", idx);
         pOverlay = new V4L2OverlayRef(v4l2_overlay_device_template[idx]);
     }else if (OVERLAY_DEVICE_FB == tOvlyType){
-        LOGD("create fb overlay! ---------- idx == %d ----------", idx);
+        ALOGD("create fb overlay! ---------- idx == %d ----------", idx);
         pOverlay = new FBOverlayRef(fb_overlay_device_template[idx]);
     }else if (OVERLAY_DEVICE_FAKE == tOvlyType){
-        LOGD("create fake overlay! ---------- idx == %d ----------", idx);
+        ALOGD("create fake overlay! ---------- idx == %d ----------", idx);
         pOverlay = new FakeOverlayRef(NULL);
     }
 

@@ -164,42 +164,42 @@ public:
         property_get("hwc.virtual.gcu.log", value, "0");
         bool bLog = (atoi(value) == 1);
         if(bLog){
-            LOGD("--------------------DUMP GPU BLIT DATA--------------------------");
-            LOGD("mBlitType = %d.", mBlitType);
-            LOGD("mCoordinateTransformed = %d.", mCoordinateTransformed);
-            LOGD("mSrcWidth = %d.", mSrcWidth);
-            LOGD("mSrcHeight = %d.", mSrcHeight);
-            LOGD("mSrcFormat = %d.", mSrcFormat);
-            LOGD("mDstWidth = %d.", mDstWidth);
-            LOGD("mDstHeight = %d.", mDstHeight);
-            LOGD("mDstFormat = %d.", mDstFormat);
-            LOGD("mRotationDegree = %d.", mRotationDegree);
+            ALOGD("--------------------DUMP GPU BLIT DATA--------------------------");
+            ALOGD("mBlitType = %d.", mBlitType);
+            ALOGD("mCoordinateTransformed = %d.", mCoordinateTransformed);
+            ALOGD("mSrcWidth = %d.", mSrcWidth);
+            ALOGD("mSrcHeight = %d.", mSrcHeight);
+            ALOGD("mSrcFormat = %d.", mSrcFormat);
+            ALOGD("mDstWidth = %d.", mDstWidth);
+            ALOGD("mDstHeight = %d.", mDstHeight);
+            ALOGD("mDstFormat = %d.", mDstFormat);
+            ALOGD("mRotationDegree = %d.", mRotationDegree);
 
             if(NULL != mSrcRect){
-                LOGD("mSrcRect->l(%d),mSrcRect->t(%d),mSrcRect->r(%d),mSrcRect->b(%d).", mSrcRect->l,mSrcRect->t,mSrcRect->r,mSrcRect->b);
+                ALOGD("mSrcRect->l(%d),mSrcRect->t(%d),mSrcRect->r(%d),mSrcRect->b(%d).", mSrcRect->l,mSrcRect->t,mSrcRect->r,mSrcRect->b);
             }
 
             if(NULL != mDstRect){
-                LOGD("mDstRect->l(%d),mDstRect->t(%d),mDstRect->r(%d),mDstRect->b(%d).", mDstRect->l,mDstRect->t,mDstRect->r,mDstRect->b);
+                ALOGD("mDstRect->l(%d),mDstRect->t(%d),mDstRect->r(%d),mDstRect->b(%d).", mDstRect->l,mDstRect->t,mDstRect->r,mDstRect->b);
             }
 
             if(NULL != mDstSubRect){
-                LOGD("mDstSubRect->l(%d),mDstSubRect->t(%d),mDstSubRect->r(%d),mDstSubRect->b(%d).", mDstSubRect->l,mDstSubRect->t,mDstSubRect->r,mDstSubRect->b);
+                ALOGD("mDstSubRect->l(%d),mDstSubRect->t(%d),mDstSubRect->r(%d),mDstSubRect->b(%d).", mDstSubRect->l,mDstSubRect->t,mDstSubRect->r,mDstSubRect->b);
             }
 
-            LOGD("mRectCount = %d.", mRectCount);
-            LOGD("mSrcAddr = 0x%x.", mSrcAddr);
-            LOGD("mSrcUAddr = 0x%x.", mSrcUAddr);
-            LOGD("mSrcVAddr = 0x%x.", mSrcVAddr);
-            LOGD("mSrcStride = %d.", mSrcStride);
-            LOGD("mSrcUStride = %d.", mSrcUStride);
-            LOGD("mSrcVStride = %d.", mSrcVStride);
-            LOGD("mDstAddr = 0x%x.", mDstAddr);
-            LOGD("mDstStride = %d.", mDstStride);
-            LOGD("mFillColor = 0x%x.", mFillColor);
-            LOGD("mFilterType = %d.", mFilterType);
-            LOGD("mFilterSize = %d.", mFilterSize);
-            LOGD("mRop = 0x%x.", mRop);
+            ALOGD("mRectCount = %d.", mRectCount);
+            ALOGD("mSrcAddr = 0x%x.", mSrcAddr);
+            ALOGD("mSrcUAddr = 0x%x.", mSrcUAddr);
+            ALOGD("mSrcVAddr = 0x%x.", mSrcVAddr);
+            ALOGD("mSrcStride = %d.", mSrcStride);
+            ALOGD("mSrcUStride = %d.", mSrcUStride);
+            ALOGD("mSrcVStride = %d.", mSrcVStride);
+            ALOGD("mDstAddr = 0x%x.", mDstAddr);
+            ALOGD("mDstStride = %d.", mDstStride);
+            ALOGD("mFillColor = 0x%x.", mFillColor);
+            ALOGD("mFilterType = %d.", mFilterType);
+            ALOGD("mFilterSize = %d.", mFilterSize);
+            ALOGD("mRop = 0x%x.", mRop);
         }
     }
 

@@ -48,7 +48,7 @@
 #include <ui/GraphicBufferMapper.h>
 #include <ui/Rect.h>
 
-#include "videodev2.h"
+#include <linux/videodev2.h>
 //#include "dms_private.h"
 #include "IDisplayEngine.h"
 
@@ -64,7 +64,7 @@ namespace android
         property_get("v4l2.wrapper.log", value, "0");   \
         bool bLog = (atoi(value) == 1);                 \
         if(bLog){                                       \
-            LOGD(__VA_ARGS__);                          \
+            ALOGD(__VA_ARGS__);                          \
         }                                               \
     }while(0)                                           \
 
@@ -182,7 +182,7 @@ private:
                 return 12;
                 break;
             default:
-                LOGE("Pixformat bpp might error, please check the input color format. Now use default 16.");
+                ALOGE("Pixformat bpp might error, please check the input color format. Now use default 16.");
                 return 16;
         }
     }
@@ -289,7 +289,7 @@ private:
 
         m_nCapability = caps;
         if(NO_ERROR != requestBuffer()){
-            LOGE("Can not alloc buffer properly.");
+            ALOGE("Can not alloc buffer properly.");
             return -EIO;
         }
 

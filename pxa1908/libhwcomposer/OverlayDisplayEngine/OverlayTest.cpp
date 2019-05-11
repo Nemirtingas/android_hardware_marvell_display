@@ -55,7 +55,7 @@
 #define HANDLE_ERROR(status)                    \
     do{                                         \
         if(NO_ERROR != status) {                \
-            LOGE("Function:(%s), Line:(%d), status error!", __FUNCTION__, __LINE__);    \
+            ALOGE("Function:(%s), Line:(%d), status error!", __FUNCTION__, __LINE__);    \
             goto ERROR;                         \
         }                                       \
     }while(0)
@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 
     FILE* fp = fopen(pszFileName, "rb");
     if(NULL == fp){
-        LOGE("Can not open file %s", pszFileName);
+        ALOGE("Can not open file %s", pszFileName);
         return 0;
     }
 
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
         input_buf[i] = (unsigned char *)phy_cont_malloc(length, PHY_CONT_MEM_ATTR_NONCACHED);
         V4L2LOG("Allocated input_buffer[%d] = %p.", i, input_buf[i]);
         if(NULL == input_buf[i]){
-            LOGE("Can not alloc enough memory.");
+            ALOGE("Can not alloc enough memory.");
             return -1;
         }
 
@@ -238,9 +238,9 @@ int main(int argc, char** argv)
             while(vFreeBuffer.isEmpty()){
                 sp<Fence> fence = new Fence(vReleaseFd[0]);
                 if(fence->wait(2000) != OK){
-                    LOGD(">>>>>>>>>>>>>>>>>>>> wait prev buf(%p) time out <<<<<<<<<<<<<<<<<<<<", (void*)vFlipedBuf[0]);
+                    ALOGD(">>>>>>>>>>>>>>>>>>>> wait prev buf(%p) time out <<<<<<<<<<<<<<<<<<<<", (void*)vFlipedBuf[0]);
                 }else{
-                    LOGD(">>>>>>>>>>>>>>>>>>>> wait prev buf(%p) ok!!!!!!! <<<<<<<<<<<<<<<<<<<<", (void*)vFlipedBuf[0]);
+                    ALOGD(">>>>>>>>>>>>>>>>>>>> wait prev buf(%p) ok!!!!!!! <<<<<<<<<<<<<<<<<<<<", (void*)vFlipedBuf[0]);
                     vFreeBuffer.add(vFlipedBuf[0]);
                     vFlipedBuf.removeItemsAt(0);
                     vReleaseFd.removeItemsAt(0);
@@ -257,17 +257,17 @@ int main(int argc, char** argv)
         while(bRetry && retry)
         {
             retry--;
-            LOGD("retry get free list %d times", 10-retry);
+            ALOGD("retry get free list %d times", 10-retry);
             pDisplayEngine->getConsumedImages(FreeBuf, nFreeBuf);
             if(0 < nFreeBuf){
                 for(uint32_t k = 0; k < nFreeBuf; k+=3){
                     if(NULL != (void*)FreeBuf[k]){
                         if(vFreeBuffer.indexOf((uint32_t)FreeBuf[k]) == NAME_NOT_FOUND){
-                            LOGD("get free buffer(%p)", (void*)FreeBuf[k]);
+                            ALOGD("get free buffer(%p)", (void*)FreeBuf[k]);
                             vFreeBuffer.add((uint32_t)FreeBuf[k]);
                             bRetry = false;
                         }else{
-                            LOGD("Found a duplicated address %p.", (void*)FreeBuf[k]);
+                            ALOGD("Found a duplicated address %p.", (void*)FreeBuf[k]);
                         }
                     }
                 }
@@ -276,20 +276,20 @@ int main(int argc, char** argv)
 #endif
 
         for(uint32_t index = 0; index < vFreeBuffer.size(); ++index){
-            LOGD("vFreeBuffer[%d] = %p.", index, (void*)vFreeBuffer[index]);
+            ALOGD("vFreeBuffer[%d] = %p.", index, (void*)vFreeBuffer[index]);
         }
 
         V4L2LOG("run in %d.", __LINE__);
         printf("loop NO.%d \n", i);
         V4L2LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> loop NO.%d \n", i);
         if((status = pDisplayEngine->drawImage(vImage, (void*)((uint32_t)vImage + 640 * 480), (void*)((uint32_t)vImage + 640 * 480 * 5 / 4), length, 1)) != NO_ERROR){
-            LOGE("Error while draw overlay.");
+            ALOGE("Error while draw overlay.");
         }
 
 #if 0
         sp<Fence> fence1 = new Fence(pDisplayEngine->getReleaseFd());
         if(fence1->wait(2000) != OK){
-            LOGD(">>>>>>>>>>>>>>>>>>>> wait current buf (%p) time out <<<<<<<<<<<<<<<<<<<<", (void*)vImage);
+            ALOGD(">>>>>>>>>>>>>>>>>>>> wait current buf (%p) time out <<<<<<<<<<<<<<<<<<<<", (void*)vImage);
         }
 #endif
 
@@ -297,7 +297,7 @@ int main(int argc, char** argv)
         vReleaseFd.add(pDisplayEngine->getReleaseFd());
 
         for(uint32_t j = 0; j < vFlipedBuf.size(); ++j){
-            LOGD(">>>>>>>>>>>>>>>>>>>> Current vFlipedBuf[%d] = %p", j, (void*)vFlipedBuf[j]);
+            ALOGD(">>>>>>>>>>>>>>>>>>>> Current vFlipedBuf[%d] = %p", j, (void*)vFlipedBuf[j]);
         }
 
         if((!(i % TIME_INTERVAL)) && !((i / TIME_INTERVAL) % 2))

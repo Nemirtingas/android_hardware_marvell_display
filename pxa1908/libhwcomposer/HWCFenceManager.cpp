@@ -21,7 +21,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sync/sw_sync.h>
+// system/core/libsync
+#include <sw_sync.h>
 #include "HWCFenceManager.h"
 
 namespace android{

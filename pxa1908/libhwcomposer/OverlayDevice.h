@@ -60,12 +60,12 @@ public:
                                      "\0"};
 
         if(nType > 1){
-            LOGE("ERROR! No such devices in channel %d.", nType);
+            ALOGE("ERROR! No such devices in channel %d.", nType);
         }
 
         m_pOverlayEngine = new FBOverlayRef(DEVICE_NAME[nType]);
         if(NO_ERROR != m_pOverlayEngine->open()){
-            LOGE("ERROR! Open overlay device failed!");
+            ALOGE("ERROR! Open overlay device failed!");
         }
 
         //memset(&m_shadowHwcLayer, 0, sizeof(m_shadowHwcLayer));
@@ -130,7 +130,7 @@ public:
             uint32_t g = (colorKeyValue >> 8 ) & 0xFF;
             uint32_t b = (colorKeyValue) & 0xFF;
 
-            LOGD("-------------------- change overlay alpha blending mode --------------------");
+            ALOGD("-------------------- change overlay alpha blending mode --------------------");
             //status = m_pOverlayEngine->setColorKey(DISP_OVLY_GLOBAL_ALPHA, 0xFF, DISP_OVLY_COLORKEY_RGB, 0, 0, 0);
             return m_pOverlayEngine->setColorKey(alphaMode, alphaValue, colorKeyMode, r, g, b);
         }
@@ -183,7 +183,7 @@ public:
         status = m_pOverlayEngine->drawImage((void*)nAddrY, (void*)nAddrU, (void*)nAddrV, length, 1);
 
         if(NO_ERROR != status){
-            LOGE("ERROR! Error happens in commit image to overlay device, status = %d.", status);
+            ALOGE("ERROR! Error happens in commit image to overlay device, status = %d.", status);
         }
 
         if(++m_nFrameCount == 1){
@@ -222,7 +222,7 @@ public:
                 return (uint32_t)(nWidth * nHeight * 1.5);
             }
             default:
-                LOGE("ERROR! Can not resolve image size for format %d.", nFormat);
+                ALOGE("ERROR! Can not resolve image size for format %d.", nFormat);
                 return (uint32_t)(nWidth * nHeight * 4);
         }
     }
@@ -247,7 +247,7 @@ public:
                 return;
             }
             default:
-                LOGE("ERROR! Can not resolve image addr because of a unsupported format %d.", nFormat);
+                ALOGE("ERROR! Can not resolve image addr because of a unsupported format %d.", nFormat);
         }
     }
 
@@ -268,7 +268,7 @@ public:
                 return;
             }
             default:
-                LOGE("ERROR! Can not resolve image strid because of a unsupported format %d.", nFormat);
+                ALOGE("ERROR! Can not resolve image strid because of a unsupported format %d.", nFormat);
         }
     }
 

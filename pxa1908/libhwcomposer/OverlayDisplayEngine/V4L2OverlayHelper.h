@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <linux/android_pmem.h>
+//#include <linux/android_pmem.h>
 #include <linux/videodev2.h>
 #include <cutils/ashmem.h>
 
@@ -41,7 +41,8 @@
 #include <cutils/atomic.h>
 #include <cutils/properties.h>
 
-#include <fb_ioctl.h>
+#include <video/mmp_ioctl.h>
+#include <mrvl_pxl_formats.h>
 
 
 using namespace android;
@@ -62,7 +63,7 @@ static int v4l2_overlay_ioctl(int fd, int req, void *arg, const char* msg)
 {
     int ret = ioctl(fd, req, arg);
     if(ret < 0 && req != (int)VIDIOC_DQBUF)
-        LOGE("V4L2 ioctl %s failed, return value(%d).", msg, ret);
+        ALOGE("V4L2 ioctl %s failed, return value(%d).", msg, ret);
 
     return ret;
 }
@@ -94,7 +95,7 @@ static int configure_pixfmt(struct v4l2_format *pixelFormat, int32_t fmt,
             nColorFmt = V4L2_PIX_FMT_BGR32;
             break;
         default:
-            LOGE("Pixformat will be error");
+            ALOGE("Pixformat will be error");
             return -1;
     }
 
@@ -119,7 +120,7 @@ static int v4l2_overlay_set_colorkey(int fd, int enable, int colorkey)
     struct v4l2_framebuffer fbuf;
     struct v4l2_format fmt;
 
-    //LOGD("%s:: %s the color key", __FUNCTION__, enable ? "enable" : "disable");
+    //ALOGD("%s:: %s the color key", __FUNCTION__, enable ? "enable" : "disable");
 
     memset(&fbuf, 0, sizeof(fbuf));
     if(v4l2_overlay_ioctl(fd, VIDIOC_G_FBUF, &fbuf, "get transparency enables")){
@@ -154,7 +155,7 @@ static int v4l2_overlay_set_global_alpha(int fd, int enable, int alpha)
     struct v4l2_framebuffer fbuf;
     struct v4l2_format fmt;
 
-    //LOGD("%s:: %s the global alpha", __FUNCTION__, enable ? "enable" : "disable");
+    //ALOGD("%s:: %s the global alpha", __FUNCTION__, enable ? "enable" : "disable");
 
     memset(&fbuf, 0, sizeof(fbuf));
     if(v4l2_overlay_ioctl(fd, VIDIOC_G_FBUF, &fbuf, "get transparency enables")){
@@ -233,7 +234,7 @@ static int v4l2_overlay_set_position(int fd, int32_t x, int32_t y, int32_t w, in
     memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     if(v4l2_overlay_ioctl(fd, VIDIOC_G_FMT, &format, "get format")){
-        LOGE("Get overlay window failed.");
+        ALOGE("Get overlay window failed.");
         return -1;
     }
 
@@ -248,7 +249,7 @@ static int v4l2_overlay_set_position(int fd, int32_t x, int32_t y, int32_t w, in
     format.fmt.win.w.height = h;
     format.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     if(v4l2_overlay_ioctl(fd, VIDIOC_S_FMT, &format, "set overlay window")){
-        LOGE("Set overlay window failed.");
+        ALOGE("Set overlay window failed.");
         return -1;
     }
 
@@ -267,7 +268,7 @@ static int v4l2_overlay_check_caps(int fd)
     }
 
     if (!(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)){
-        LOGE("overlay driver does not support V4L2_CAP_VIDEO_OUTPUT");
+        ALOGE("overlay driver does not support V4L2_CAP_VIDEO_OUTPUT");
         return -1;
     }
 
@@ -280,7 +281,7 @@ static int v4l2_overlay_set_crop(int fd, int32_t x, int32_t y, int32_t w, int32_
     memset(&crop, 0, sizeof(crop));
     crop.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     if(v4l2_overlay_ioctl(fd, VIDIOC_G_CROP, &crop, "get overlay crop")){
-        LOGE("Get overlay window failed.");
+        ALOGE("Get overlay window failed.");
         return -1;
     }
 
@@ -296,7 +297,7 @@ static int v4l2_overlay_set_crop(int fd, int32_t x, int32_t y, int32_t w, int32_
     crop.c.height = h;
     crop.type = V4L2_BUF_TYPE_VIDEO_OVERLAY;
     if(v4l2_overlay_ioctl(fd, VIDIOC_S_CROP, &crop, "set overlay crop")){
-        LOGE("Set overlay window failed.");
+        ALOGE("Set overlay window failed.");
         return -1;
     }
 

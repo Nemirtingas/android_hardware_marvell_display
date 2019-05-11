@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <linux/android_pmem.h>
+//#include <linux/android_pmem.h>
 #include <cutils/ashmem.h>
 
 #ifdef  LOG_TAG
@@ -49,7 +49,7 @@
 #include <binder/MemoryBase.h>
 #include <binder/MemoryHeapBase.h>
 
-#include "fb_ioctl.h"
+#include <video/mmp_ioctl.h>
 #include "OverlayDevice.h"
 #include "V4L2Overlay.h"
 #include "V4L2OverlayHelper.h"
@@ -67,7 +67,7 @@ namespace android
         const char* ov_device = m_strDevName.string();
         m_fd = ::open(ov_device, O_RDWR | O_NONBLOCK);
         if( m_fd <= 0 ) {
-            LOGE("Open overlay device[%s] fail", ov_device);
+            ALOGE("Open overlay device[%s] fail", ov_device);
             return -EIO;
         }
         m_iFlag |= FLAG_OPEN;
@@ -123,7 +123,7 @@ namespace android
             requestbuffers.memory   = V4L2_MEMORY_USERPTR;
             requestbuffers.count    = m_nCapability;
             if (v4l2_overlay_ioctl(m_fd, VIDIOC_REQBUFS, &requestbuffers, "request buffer")) {
-                LOGE("Error: can't require buffer");
+                ALOGE("Error: can't require buffer");
                 return -EIO;
             }
 
@@ -145,7 +145,7 @@ namespace android
             (m_nGlobalAlpha != (uint32_t)alpha_value))) {
             uint32_t nEnable = (alpha_type == DISP_OVLY_GLOBAL_ALPHA);
             if (v4l2_overlay_set_global_alpha(m_fd, nEnable, alpha_value)){
-                LOGE("Set global alpha fail\n");
+                ALOGE("Set global alpha fail\n");
                 return -EIO;
             }
 
@@ -175,7 +175,7 @@ namespace android
             m_nYoffset = yOffset;
 
             if (v4l2_overlay_set_position(m_fd, xOffset, yOffset, width, height)){
-                LOGE("can not update window position and size.");
+                ALOGE("can not update window position and size.");
                 return -EIO;
             }
         }
@@ -194,12 +194,12 @@ namespace android
         V4L2WRAPPERLOG("%s addr(%p) and length(%d)", __FUNCTION__, yAddr, length);
 
         if(NULL == yAddr || 0 >= length || (!isEnabled())){
-            LOGE("Invalid addr(%p) & length(%d) or Overlay not enabled.", yAddr, length);
+            ALOGE("Invalid addr(%p) & length(%d) or Overlay not enabled.", yAddr, length);
             return -EINVAL;
         }
 
         if(!canDraw()){
-            LOGE("Can not draw to overlay, preserved buffer all occupied, call getConsumedImage() to free them.");
+            ALOGE("Can not draw to overlay, preserved buffer all occupied, call getConsumedImage() to free them.");
             return -EINVAL;
         }
 
@@ -231,7 +231,7 @@ namespace android
 
         if (-1 == v4l2_overlay_ioctl(m_fd, VIDIOC_QBUF, &newbuffer, "Flip buffer")) {
             if(!m_bFirstFrame){
-                LOGE("Can't Flip buffer\n");
+                ALOGE("Can't Flip buffer\n");
                 return -EIO;
             }
         }
@@ -239,7 +239,7 @@ namespace android
         m_vBufferAddr.editItemAt(newbuffer.index) = yAddr;
         m_iFlag |= FLAG_ON_DRAW;
         if (NO_ERROR != setStreamOn(true)){
-            LOGE("%s switch stream on failed.", __FUNCTION__);
+            ALOGE("%s switch stream on failed.", __FUNCTION__);
             return -EIO;
         }
 
@@ -273,7 +273,7 @@ namespace android
             char msg[16] = {0};
             sprintf(msg, "%s", (bOn) ? "STREAMON" : "STREAMOFF");
             if(v4l2_overlay_ioctl(m_fd, streamOnOff, &buftype, msg)) {
-                LOGE("Error: video overlay fail while %s.\n", msg);
+                ALOGE("Error: video overlay fail while %s.\n", msg);
                 return -EIO;
             } else {
                 m_bStreamOn = bOn;
@@ -312,7 +312,7 @@ namespace android
     {
         if (m_bStreamOn){
             if(NO_ERROR != setStreamOn(false)){
-                LOGE("Error: switch off video overlay fail\n" );
+                ALOGE("Error: switch off video overlay fail\n" );
                 return -EIO;
             }
         }
@@ -405,7 +405,7 @@ namespace android
         if(videoInfo != m_wrapperSetting)
         {
             if (NO_ERROR != setStreamOn(false)){
-                LOGE("Can not stream off the ovly for set new param.");
+                ALOGE("Can not stream off the ovly for set new param.");
                 return -EIO;
             }
 
@@ -414,17 +414,17 @@ namespace android
             uint32_t nCropHeight = videoInfo.m_nCropB - videoInfo.m_nCropT;
 
             if (v4l2_overlay_check_caps(m_fd)){
-                LOGE("check caps failed.");
+                ALOGE("check caps failed.");
                 return -EIO;
             }
 
             if (v4l2_overlay_set_format(m_fd, videoInfo.m_nWidth, videoInfo.m_nHeight, videoInfo.m_nFormat, videoInfo.m_bMultiPlanes)){
-                LOGE("Set view port offset fail\n");
+                ALOGE("Set view port offset fail\n");
                 return -EIO;
             }
 
             if(NO_ERROR != setCapability(MAX_FRAME_BUFFERS)){
-                LOGE("Can not alloc buffer properly.");
+                ALOGE("Can not alloc buffer properly.");
                 return -EIO;
             }
 
@@ -434,7 +434,7 @@ namespace android
             }
 
             if (v4l2_overlay_set_crop(m_fd, videoInfo.m_nCropL, videoInfo.m_nCropT, nCropWidth, nCropHeight)){
-                LOGE("Set view port offset fail\n");
+                ALOGE("Set view port offset fail\n");
                 return -EIO;
             }
         }

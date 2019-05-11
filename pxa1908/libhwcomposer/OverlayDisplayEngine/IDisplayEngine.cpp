@@ -45,6 +45,8 @@
 #include <ui/Rect.h>
 #include <linux/fb.h>
 
+#include <mrvl_pxl_formats.h>
+
 //#include "dms_private.h"
 #include "IDisplayEngine.h"
 #include "FramebufferEngine.h"
@@ -117,7 +119,7 @@ uint32_t ResolveColorFormat(uint32_t dmsFormat)
             return FB_VMODE_YUV422PACKED_SWAPYUorV;
         case HAL_PIXEL_FORMAT_YCrCb_420_SP: //DISP_FOURCC_NV21:
         default:
-            LOGE("UNKNOWN FORMAT %d !!!!", dmsFormat);
+            ALOGE("UNKNOWN FORMAT %d !!!!", dmsFormat);
             return  FB_VMODE_RGB565;
     }
 }
@@ -173,7 +175,7 @@ void  ResolveScreenInfo(struct ::fb_var_screeninfo& varInfo, const DisplayEngine
         varInfo.transp.length   = 8;
         break;
     default:
-        LOGE("Unsupported BPP mode in DisplayEngineCaps.");
+        ALOGE("Unsupported BPP mode in DisplayEngineCaps.");
         break;
     }
 }

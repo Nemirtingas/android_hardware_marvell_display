@@ -25,6 +25,8 @@
 #include <surfaceflinger/Transform.h>
 #include "GcuEngine.h"
 
+#include <mrvl_pxl_formats.h>
+
 using namespace android;
 
 GcuEngine::GcuEngine() : mGCUContextPtr(NULL)
@@ -33,7 +35,7 @@ GcuEngine::GcuEngine() : mGCUContextPtr(NULL)
                        , mOrPatternPtr(NULL)
 {
     if(!Init()) {
-        LOGE("GcuEngine initialization failed!");
+        ALOGE("GcuEngine initialization failed!");
     }
 }
 
@@ -77,7 +79,7 @@ bool GcuEngine::Init()
     if(mGCUContextPtr == NULL)
     {
          GCUenum result = gcuGetError();
-         LOGE("GCU create context failed, error code = %d", result);
+         ALOGE("GCU create context failed, error code = %d", result);
          return false;
     }
 
@@ -185,7 +187,7 @@ bool GcuEngine::Blit(PBlitDataDesc blitDesc)
         }
         default:
         {
-            LOGE("Invalid blit type for GPU acceleration");
+            ALOGE("Invalid blit type for GPU acceleration");
             return false;
         }
     }
@@ -400,7 +402,7 @@ GCU_ROTATION GcuEngine::getGCURotation(uint32_t rotationDegree)
              res = GCU_ROTATION_270;
              break;
         default:
-             LOGE("Invalid rotation degree. %d lines, %s", __LINE__, __FUNCTION__);
+             ALOGE("Invalid rotation degree. %d lines, %s", __LINE__, __FUNCTION__);
     }
 
     // Temporarily we do not concern the FLIP case.
@@ -436,7 +438,7 @@ GCU_FORMAT GcuEngine::getGCUFormat(uint32_t format)
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
             return GCU_FORMAT_NV21;
         default:
-            LOGE("New type switch needed! %d, %s", __LINE__, __FUNCTION__);
+            ALOGE("New type switch needed! %d, %s", __LINE__, __FUNCTION__);
     }
     return GCU_FORMAT_UNKNOW;
 }
@@ -444,7 +446,7 @@ GCU_FORMAT GcuEngine::getGCUFormat(uint32_t format)
 bool GcuEngine::LoadHintPic(uint32_t id, const char* fileName)
 {
     if(NULL == fileName || id >= MAX_HINT_PICS){
-        LOGE("ERROR: Load %s to mHintSurface[%d] failed!", fileName, id);
+        ALOGE("ERROR: Load %s to mHintSurface[%d] failed!", fileName, id);
         return false;
     }
 
@@ -454,14 +456,14 @@ bool GcuEngine::LoadHintPic(uint32_t id, const char* fileName)
         return true;
     }
 
-    LOGE("ERROR: _gcuLoadRGBSurfaceFromFile(%s) Failed!", fileName);
+    ALOGE("ERROR: _gcuLoadRGBSurfaceFromFile(%s) Failed!", fileName);
     return false;
 }
 
 bool GcuEngine::BlitHintPic(uint32_t id, PBlitDataDesc blitDesc)
 {
     if(id >= MAX_HINT_PICS || NULL == mHintSurface[id]){
-        LOGE("ERROR: HINT id(%d), mHintSurface[%d] = %p.", id, id, mHintSurface[id]);
+        ALOGE("ERROR: HINT id(%d), mHintSurface[%d] = %p.", id, id, mHintSurface[id]);
         return false;
     }
 
