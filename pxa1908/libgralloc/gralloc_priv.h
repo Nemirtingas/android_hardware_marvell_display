@@ -33,6 +33,8 @@
 
 #include <libGAL.h>
 
+#include "mrvl_pxl_formats.h"
+
 struct private_module_t;
 struct private_handle_t;
 

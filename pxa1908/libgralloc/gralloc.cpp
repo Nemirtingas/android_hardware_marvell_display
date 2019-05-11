@@ -185,6 +185,9 @@ extern int gralloc_device_open(const hw_module_t* module, const char* name,
         // Open framebuffer device.
         return fb_device_open(module, name, device);
     }
+    /*
+        TODO: Add here an open for GRALLOC_HARDWARE_FB1 ?
+    */
 
     ALOGE("Invalid device name");
     return -EINVAL;
