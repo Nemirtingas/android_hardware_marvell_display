@@ -289,84 +289,91 @@ _MapBuffer(
 
 extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Format, int Usage, buffer_handle_t *Handle, int *Stride)
 {
-  android::IPCThreadState *ipc; // r0
-  signed int isPmemAlloc; // r8
-  int32_t status; // r0 MAPDST
-  unsigned int height; // r8
-  int dirtyWidthAligned16; // r4
-  unsigned int v24; // r11
-  int samples; // r11
-  gceSURF_TYPE surfType; // r9
-  int v27; // r0
-  int xstride; // r7
-  int ystride; // r6
-  int v33; // r9 MAPDST
-  signed int isGcAlloc; // r5
-  signed int v36; // r0
-  int32_t v42; // r6
-  private_handle_t *handle = NULL; // r0 MAPDST
-  int32_t size; // r3
-  int v64; // r1
-  int v68; // r0
-  int v70; // r0
-  int master; // [sp+18h] [bp-90h]
-  unsigned int size_rounded_to_page; // [sp+1Ch] [bp-8Ch]
-  int dirtyHeight; // [sp+20h] [bp-88h]
-  signed int fd; // [sp+24h] [bp-84h] MAPDST
-  int dirtyWidth; // [sp+28h] [bp-80h]
-  hw_module_t *dev; // [sp+2Ch] [bp-7Ch]
-  int buffFlags; // [sp+30h] [bp-78h] MAPDST
-  int callingPID; // [sp+34h] [bp-74h] MAPDST
-  gceHARDWARE_TYPE hwtype; // [sp+3Ch] [bp-6Ch]
-  gceSURF_FORMAT format; // [sp+44h] [bp-64h] MAPDST
-  gcePOOL resolvePool;
-  gcoSURF Surface; // [sp+4Ch] [bp-5Ch] MAPDST
-  int name; // [sp+50h] [bp-58h]
-  int v94; // [sp+54h] [bp-54h]
-  int shAddr; // [sp+58h] [bp-50h] MAPDST
-  gctUINT32 pixelPipes; // [sp+5Ch] [bp-4Ch]
-  int stride; // [sp+60h] [bp-48h] MAPDST
-  int alignedHeight; // [sp+64h] [bp-44h]
-  gctUINT32 resolveVidNode;
-  gctSIZE_T resolveAdjustedSize;
-  uint32_t physAddr; // [sp+70h] [bp-38h]
-  void *Vaddr; // [sp+74h] [bp-34h] MAPDST
-  int alignedWidth2; // [sp+78h] [bp-30h]
-  int alignedHeight2; // [sp+7Ch] [bp-2Ch] MAPDST
+    android::IPCThreadState *ipc; // r0
+    signed int isPmemAlloc; // r8
+    int32_t status; // r0 MAPDST
+    unsigned int height; // r8
+    int dirtyWidthAligned16; // r4
+    unsigned int v24; // r11
+    int samples; // r11
+    gceSURF_TYPE surfType; // r9
+    int v27; // r0
+    int xstride; // r7
+    int ystride; // r6
+    int v33; // r9 MAPDST
+    signed int isGcAlloc; // r5
+    signed int v36; // r0
+    int32_t v42; // r6
+    private_handle_t *handle; // r0 MAPDST
+    int32_t size; // r3
+    int v64; // r1
+    int v68; // r0
+    int v70; // r0
+    int master; // [sp+18h] [bp-90h]
+    unsigned int size_rounded_to_page; // [sp+1Ch] [bp-8Ch]
+    int dirtyHeight; // [sp+20h] [bp-88h]
+    signed int fd; // [sp+24h] [bp-84h] MAPDST
+    int dirtyWidth; // [sp+28h] [bp-80h]
+    hw_module_t *dev; // [sp+2Ch] [bp-7Ch]
+    int buffFlags; // [sp+30h] [bp-78h] MAPDST
+    int callingPID; // [sp+34h] [bp-74h] MAPDST
+    gceHARDWARE_TYPE hwtype; // [sp+3Ch] [bp-6Ch]
+    gceSURF_FORMAT format; // [sp+44h] [bp-64h] MAPDST
+    gcePOOL resolvePool;
+    gcoSURF Surface; // [sp+4Ch] [bp-5Ch] MAPDST
+    int name; // [sp+50h] [bp-58h]
+    int v94; // [sp+54h] [bp-54h]
+    int shAddr; // [sp+58h] [bp-50h] MAPDST
+    gctUINT32 pixelPipes; // [sp+5Ch] [bp-4Ch]
+    int stride; // [sp+60h] [bp-48h] MAPDST
+    int alignedHeight; // [sp+64h] [bp-44h]
+    gctUINT32 resolveVidNode;
+    gctSIZE_T resolveAdjustedSize;
+    uint32_t physAddr; // [sp+70h] [bp-38h]
+    void *Vaddr; // [sp+74h] [bp-34h] MAPDST
+    int alignedWidth2; // [sp+78h] [bp-30h]
+    int alignedHeight2; // [sp+7Ch] [bp-2Ch] MAPDST
 
-  dirtyHeight = Height;
-  dirtyWidth = Width;
-  hwtype = (gceHARDWARE_TYPE)1;
-  if ( !Handle || !Stride )
-    return -EINVAL;
-  gcoHAL_GetHardwareType(0, &hwtype);
-  setHwType71D0(Usage);
-  fd = open("/dev/null", 0, 0);
-  stride = 0;
-  Surface = 0;
-  shAddr = 0;
-  stride = 0;
-  alignedHeight = 0;
-  resolveVidNode = 0;
-  resolveAdjustedSize = 0;
-  physAddr = 0;
-  ipc = android::IPCThreadState::self();
-  callingPID = ipc->getCallingPid();
-  dev = Dev->common.module;
+    dirtyHeight = Height;
+    dirtyWidth = Width;
+    hwtype = (gceHARDWARE_TYPE)1;
+    if ( !Handle || !Stride )
+        return -EINVAL;
 
-  _ConvertAndroid2HALFormat(Format, &format);
-  if ( format )
-  {
+    gcoHAL_GetHardwareType(0, &hwtype);
+    setHwType71D0(Usage);
+    fd = open("/dev/null", 0, 0);
+    stride = 0;
+    Surface = 0;
+    shAddr = 0;
+    stride = 0;
+    alignedHeight = 0;
+    resolveVidNode = 0;
+    resolveAdjustedSize = 0;
+    physAddr = 0;
+    ipc = android::IPCThreadState::self();
+    callingPID = ipc->getCallingPid();
+    dev = Dev->common.module;
+    handle = NULL;
+
+    _ConvertAndroid2HALFormat(Format, &format);
+    if ( format == gcvSURF_UNKNOWN )
+    {
+        ALOGE("error: HAL_PIXEL_FORMAT %x\n", Format);
+        master = -1;
+        goto OnError;
+    }
+
     status = gcoHAL_QueryPixelPipesInfo(&pixelPipes, 0, 0);
     if ( status < 0 )
     {
-      handle = 0;
-      isPmemAlloc = 0;
       master = -1;
-      goto ON_ERROR;
+      goto OnError;
     }
     if ( (Usage & 0x10200) != GRALLOC_USAGE_HW_RENDER )
     {
+        isPmemAlloc = 1;
+
         buffFlags = private_handle_t::PRIV_FLAGS_USES_PMEM;
       if ( Usage & GRALLOC_USAGE_HW_VIDEO_ENCODER )
         buffFlags |= private_handle_t::PRIV_FLAGS_USES_PMEM_ADSP;
@@ -425,124 +432,33 @@ extern int gc_gralloc_alloc(alloc_device_t *Dev, int Width, int Height, int Form
           status = gcoSURF_Construct(0, dirtyWidthAligned16, height, 1, (gceSURF_TYPE)v36, format, gcvPOOL_USER, &Surface);
           if ( status < 0 )
           {
-gcoSURF_ConstructFailed:
-            handle = 0;
-            isPmemAlloc = 1;
-            goto ON_ERROR;
+            goto OnError;
           }
           status = gcoSURF_GetAlignedSize(Surface, (uint32_t*)&stride, (uint32_t*)&alignedHeight, 0);
           if ( status < 0 )
           {
-            goto gcoSURF_ConstructFailed;
+            goto OnError;
           }
           status = gcoSURF_QueryVidMemNode(Surface, (_gcuVIDMEM_NODE**)&resolveVidNode, &resolvePool, (gctUINT_PTR)&resolveAdjustedSize);
           if ( status < 0 )
           {
-            goto gcoSURF_ConstructFailed;
+            goto OnError;
           }
           if ( dirtyWidthAligned16 != dirtyWidth || height != dirtyHeight )
           {
             status = gcoSURF_SetRect(Surface, dirtyWidth, dirtyHeight);
             if ( status < 0 )
             {
-              goto gcoSURF_ConstructFailed;
+              goto OnError;
             }
           }
           dirtyHeight = height;
           samples = 0;
           dirtyWidth = dirtyWidthAligned16;
-          isPmemAlloc = 1;
           surfType = gcvSURF_BITMAP;
-
-AllocBuffer:
-          status = gcoSURF_AllocShBuffer(Surface, (void**)&shAddr);
-          if ( status < 0 )
-          {
-            handle = 0;
-            goto ON_ERROR;
-          }
-          size = stride * dirtyHeight;
-          handle = new private_handle_t(fd, size, buffFlags);
-          handle->format = Format;
-          handle->surfType = surfType;
-          handle->samples = samples;
-          handle->height = dirtyHeight;
-          handle->width = dirtyWidth;
-          handle->surface = Surface;
-          handle->surfaceHigh32Bits = 0;
-          handle->surfFormat = format;
-          handle->size = Surface->totalSize[22];
-          handle->clientPID = callingPID;
-          handle->allocUsage = Usage;
-          handle->signal = 0;
-          handle->signalHigh32Bits = 0;
-          handle->lockUsage = 0;
-          handle->shAddr = (gctSHBUF)shAddr;
-          handle->shAddrHight32Bits = 0;
-          handle->master = master;
-          if ( isPmemAlloc )
-          {
-            handle->lockAddr = physAddr;
-            handle->pool = (gcePOOL)Surface->totalSize[27];
-            handle->infoB2 = Surface->totalSize[39];
-            handle->infoA2 = Surface->totalSize[90];
-            v64 = Surface->totalSize[102];
-            handle->mem_ystride = ystride;
-            handle->infoB3 = v64;
-            handle->size = size_rounded_to_page;
-            handle->mem_xstride = xstride;
-            v42 = _MapBuffer((gralloc_module_t*)dev, handle, &Vaddr);
-            if ( v42 < 0 )
-            {
-              ALOGE("gc_gralloc_map memory error");
-              fd = -1;
-              goto ON_ERROR;
-            }
-            status = gcoSURF_MapUserSurface(Surface, 0, (gctPOINTER)handle->base, -1);
-            if ( status < 0 )
-            {
-              goto ON_ERROR;
-            }
-          }
-          else
-          {
-            v68 = Surface->totalSize[41];
-            alignedWidth2 = 0;
-            alignedHeight2 = 0;
-            name = v68;
-            gcoHAL_NameVideoMemory(v68, (gctUINT32*)&name);
-            handle->infoA1 = name;
-            handle->pool = (gcePOOL)Surface->totalSize[27];
-            handle->infoB2 = Surface->totalSize[39];
-            v70 = Surface->totalSize[104];
-            v94 = v70;
-            if ( v70 )
-              gcoHAL_NameVideoMemory(v70, (gctUINT32*)&v94);
-            handle->infoB1 = v94;
-            handle->infoA2 = Surface->totalSize[90];
-            handle->infoB3 = Surface->totalSize[102];
-            status = gcoSURF_GetAlignedSize(Surface, (gctUINT*)&alignedWidth2, (gctUINT*)&alignedHeight2, 0);
-            if ( status < 0 )
-            {
-                fd = -1;
-                goto ON_ERROR;
-            }
-            handle->mem_xstride = alignedWidth2;
-            handle->mem_ystride = alignedHeight2;
-            v42 = _MapBuffer((gralloc_module_t*)dev, handle, &Vaddr);
-          }
-          if ( !v42 )
-          {
-            *Handle = handle;
-            *Stride = stride;
-            if ( Vaddr && !(Usage & GRALLOC_USAGE_HW_RENDER) )
-              memset(Vaddr, 0, handle->size);
-            goto LABEL_109;
-          }
-          status = -13;
-            fd = -1;
-            goto ON_ERROR;
+          goto AllocBuffer;
     }
+    isPmemAlloc = 0;
     samples = (uint8_t)Usage;
     if ( Usage & (GRALLOC_USAGE_SW_READ_MASK|GRALLOC_USAGE_SW_WRITE_MASK) )
     {
@@ -654,7 +570,7 @@ AllocBuffer:
         {
             handle = 0;
             isPmemAlloc = 0;
-            goto ON_ERROR;
+            goto OnError;
         }
     }
 
@@ -675,7 +591,7 @@ AllocBuffer:
         {
             handle = 0;
             isPmemAlloc = 0;
-            goto ON_ERROR;
+            goto OnError;
         }
         setHwType71D0(0);
         status = gcoSURF_Lock(Surface, 0, 0);
@@ -683,7 +599,7 @@ AllocBuffer:
         {
             handle = 0;
             isPmemAlloc = 0;
-            goto ON_ERROR;
+            goto OnError;
         }
         setHwType71D0(Usage);
       }
@@ -712,14 +628,99 @@ AllocBuffer:
     }
     handle = 0;
     isPmemAlloc = 0;
-    goto ON_ERROR;
-  }
-  // This is where function goes if pixel format is not recognized
-  isPmemAlloc = 0;
-  ALOGE("error: HAL_PIXEL_FORMAT %x\n", Format);
-  status = -EACCES;
-  master = -1;
-ON_ERROR:
+    goto OnError;
+
+AllocBuffer:
+    status = gcoSURF_AllocShBuffer(Surface, (void**)&shAddr);
+    if ( status < 0 )
+    {
+        goto OnError;
+    }
+    size = stride * dirtyHeight;
+    handle = new private_handle_t(fd, size, buffFlags);
+    handle->format = Format;
+    handle->surfType = surfType;
+    handle->samples = samples;
+    handle->height = dirtyHeight;
+    handle->width = dirtyWidth;
+    handle->surface = Surface;
+    handle->surfaceHigh32Bits = 0;
+    handle->surfFormat = format;
+    handle->size = Surface->totalSize[22];
+    handle->clientPID = callingPID;
+    handle->allocUsage = Usage;
+    handle->signal = 0;
+    handle->signalHigh32Bits = 0;
+    handle->lockUsage = 0;
+    handle->shAddr = (gctSHBUF)shAddr;
+    handle->shAddrHight32Bits = 0;
+    handle->master = master;
+    if ( isPmemAlloc )
+    {
+        handle->lockAddr = physAddr;
+        handle->pool = (gcePOOL)Surface->totalSize[27];
+        handle->infoB2 = Surface->totalSize[39];
+        handle->infoA2 = Surface->totalSize[90];
+        v64 = Surface->totalSize[102];
+        handle->mem_ystride = ystride;
+        handle->infoB3 = v64;
+        handle->size = size_rounded_to_page;
+        handle->mem_xstride = xstride;
+        v42 = _MapBuffer((gralloc_module_t*)dev, handle, &Vaddr);
+        if ( v42 < 0 )
+        {
+            ALOGE("gc_gralloc_map memory error");
+            fd = -1;
+            goto OnError;
+        }
+        status = gcoSURF_MapUserSurface(Surface, 0, (gctPOINTER)handle->base, -1);
+        if ( status < 0 )
+        {
+            goto OnError;
+        }
+    }
+    else
+    {
+        v68 = Surface->totalSize[41];
+        alignedWidth2 = 0;
+        alignedHeight2 = 0;
+        name = v68;
+        gcoHAL_NameVideoMemory(v68, (gctUINT32*)&name);
+        handle->infoA1 = name;
+        handle->pool = (gcePOOL)Surface->totalSize[27];
+        handle->infoB2 = Surface->totalSize[39];
+        v70 = Surface->totalSize[104];
+        v94 = v70;
+        if ( v70 )
+            gcoHAL_NameVideoMemory(v70, (gctUINT32*)&v94);
+
+        handle->infoB1 = v94;
+        handle->infoA2 = Surface->totalSize[90];
+        handle->infoB3 = Surface->totalSize[102];
+        status = gcoSURF_GetAlignedSize(Surface, (gctUINT*)&alignedWidth2, (gctUINT*)&alignedHeight2, 0);
+        if ( status < 0 )
+        {
+            fd = -1;
+            goto OnError;
+        }
+        handle->mem_xstride = alignedWidth2;
+        handle->mem_ystride = alignedHeight2;
+        v42 = _MapBuffer((gralloc_module_t*)dev, handle, &Vaddr);
+    }
+    if ( !v42 )
+    {
+        *Handle = handle;
+        *Stride = stride;
+        if ( Vaddr && !(Usage & GRALLOC_USAGE_HW_RENDER) )
+        memset(Vaddr, 0, handle->size);
+
+        gcoHAL_SetHardwareType(0, hwtype);
+        return 0;
+    }
+    status = -13;
+    fd = -1;
+
+OnError:
   // End of the part if pixel format is not recognized
   if ( Surface )
     gcoSURF_Destroy(Surface);
@@ -738,11 +739,9 @@ ON_ERROR:
     else
       close(master);
   }
-  v42 = -EINVAL;
   ALOGE("Failed to allocate, status=%d", status);
-LABEL_109:
   gcoHAL_SetHardwareType(0, hwtype);
-  return v42;
+  return -EINVAL;
 }
 
 /*******************************************************************************
